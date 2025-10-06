@@ -3,25 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Betting Bankroll Manager</title>
+    <meta name="description" content="Sistema inteligente de gestão de banca com metodologias profissionais">
+    <title>Gestão Inteligente de Banca</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1600px; margin: 0 auto; }
         .header {
             background: white;
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        .header h1 { color: #667eea; font-size: 32px; margin-bottom: 5px; }
-        .header p { color: #666; }
+        .header h1 { color: #1e3a8a; font-size: 32px; margin-bottom: 5px; }
+        .header p { color: #666; font-size: 14px; }
+        .strategy-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
         .config-panel {
             background: white;
             border-radius: 20px;
@@ -29,13 +40,7 @@
             margin-bottom: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-        .config-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 20px; }
         .form-group label {
             display: block;
             font-weight: 600;
@@ -43,7 +48,7 @@
             margin-bottom: 8px;
             font-size: 14px;
         }
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e5e7eb;
@@ -51,29 +56,112 @@
             font-size: 16px;
             transition: all 0.3s;
         }
-        .form-group input:focus { outline: none; border-color: #667eea; }
-        .risk-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+        .form-group input:focus, .form-group select:focus { 
+            outline: none; 
+            border-color: #7c3aed; 
         }
-        .risk-option {
+        .strategy-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .strategy-option {
             padding: 20px;
             border: 2px solid #e5e7eb;
             border-radius: 15px;
-            text-align: center;
             cursor: pointer;
             transition: all 0.3s;
+            background: #fafafa;
         }
-        .risk-option:hover { border-color: #667eea; transform: translateY(-2px); }
-        .risk-option.active { border-color: #667eea; background: #f0f4ff; }
-        .risk-option.low.active { border-color: #10b981; background: #f0fdf4; }
-        .risk-option.medium.active { border-color: #f59e0b; background: #fef3c7; }
-        .risk-option.high.active { border-color: #ef4444; background: #fef2f2; }
-        .risk-option .icon { font-size: 32px; margin-bottom: 10px; }
-        .risk-option .title { font-weight: 700; font-size: 16px; margin-bottom: 5px; }
-        .risk-option .details { font-size: 12px; color: #666; }
-        .stats-panel {
+        .strategy-option:hover { 
+            border-color: #7c3aed; 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124,58,237,0.2);
+        }
+        .strategy-option.active { 
+            border-color: #7c3aed; 
+            background: #f5f3ff;
+        }
+        .strategy-option .name {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #1e3a8a;
+        }
+        .strategy-option .description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .strategy-option .tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .ai-panel {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(124,58,237,0.4);
+        }
+        .ai-panel h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ai-suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        .ai-card {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .ai-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        .ai-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .ai-card .detail {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        .ai-alert {
+            background: rgba(239,68,68,0.2);
+            border: 2px solid rgba(239,68,68,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .ai-alert.warning {
+            background: rgba(245,158,11,0.2);
+            border-color: rgba(245,158,11,0.5);
+        }
+        .ai-alert.success {
+            background: rgba(16,185,129,0.2);
+            border-color: rgba(16,185,129,0.5);
+        }
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 15px;
@@ -86,32 +174,17 @@
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             text-align: center;
         }
-        .stat-card .label { font-size: 13px; color: #666; margin-bottom: 8px; }
-        .stat-card .value { font-size: 26px; font-weight: 700; color: #333; }
+        .stat-card .label { font-size: 12px; color: #666; margin-bottom: 8px; text-transform: uppercase; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: #1e3a8a; }
         .stat-card.positive .value { color: #10b981; }
         .stat-card.negative .value { color: #ef4444; }
-        .stat-card.primary .value { color: #667eea; }
-        .suggestion-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        .stat-card .change {
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 600;
         }
-        .suggestion-box h3 { margin-bottom: 15px; font-size: 20px; }
-        .suggestion-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .suggestion-item {
-            background: rgba(255,255,255,0.2);
-            padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-        .suggestion-item strong { display: block; font-size: 24px; margin-bottom: 5px; }
+        .stat-card .change.up { color: #10b981; }
+        .stat-card .change.down { color: #ef4444; }
         .tabs {
             background: white;
             border-radius: 20px 20px 0 0;
@@ -130,18 +203,12 @@
             transition: all 0.3s;
         }
         .tab-btn:hover { background: #e5e7eb; }
-        .tab-btn.active { background: #667eea; color: white; }
+        .tab-btn.active { background: #7c3aed; color: white; }
         .tab-content {
             background: white;
             padding: 30px;
             border-radius: 0 0 20px 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        }
-        .add-entry-form {
-            background: #f9fafb;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
         }
         .form-row {
             display: grid;
@@ -158,11 +225,13 @@
             transition: all 0.3s;
             font-size: 15px;
         }
-        .btn-primary { background: #667eea; color: white; }
+        .btn-primary { 
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white; 
+        }
         .btn-primary:hover {
-            background: #5568d3;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+            box-shadow: 0 5px 15px rgba(124,58,237,0.4);
         }
         .btn-success { background: #10b981; color: white; padding: 8px 16px; font-size: 13px; }
         .btn-danger { background: #ef4444; color: white; padding: 8px 16px; font-size: 13px; }
@@ -191,48 +260,91 @@
         .actions { display: flex; gap: 8px; }
         .empty-state { text-align: center; padding: 60px 20px; color: #666; }
         .empty-state .icon { font-size: 64px; margin-bottom: 20px; opacity: 0.3; }
-        .export-buttons {
-            display: flex;
-            gap: 10px;
+        .analysis-panel {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 20px;
             margin-top: 20px;
+            border-left: 4px solid #7c3aed;
+        }
+        .analysis-panel h3 {
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .analysis-item {
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid #10b981;
+        }
+        .analysis-item.warning { border-left-color: #f59e0b; }
+        .analysis-item.danger { border-left-color: #ef4444; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.5s ease;
         }
         @media (max-width: 768px) {
-            .config-grid, .risk-selector, .form-row { grid-template-columns: 1fr; }
+            .strategy-selector, .ai-suggestions, .stats-grid { 
+                grid-template-columns: 1fr; 
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>💰 Gestão de Banca - Apostas Esportivas</h1>
-            <p>Sistema inteligente de gerenciamento com sugestões automáticas por nível de risco</p>
+            <h1>🧠 Gestão Inteligente de Banca</h1>
+            <p>Sistema com IA e metodologias profissionais comprovadas</p>
+            <span class="strategy-badge" id="currentStrategyBadge">Kelly Criterion Ativo</span>
         </div>
 
         <div class="config-panel">
-            <h2 style="color: #333; margin-bottom: 20px;">⚙️ Configuração da Banca</h2>
-            <div class="config-grid">
+            <h2 style="color: #1e3a8a; margin-bottom: 20px;">⚙️ Configuração</h2>
+            <div class="form-row">
                 <div class="form-group">
-                    <label>💵 Valor da Banca (R$)</label>
+                    <label>💵 Banca Atual (R$)</label>
                     <input type="number" id="bankrollInput" value="20" step="0.01" min="1">
                 </div>
+                <div class="form-group">
+                    <label>📊 Taxa de Acerto Estimada (%)</label>
+                    <input type="number" id="winRateInput" value="55" step="1" min="30" max="80">
+                    <small style="color: #666; font-size: 12px;">Use seu histórico ou estime conservadoramente (50-55%)</small>
+                </div>
             </div>
-            <div class="form-group" style="margin-top: 20px;">
-                <label>🎯 Nível de Risco</label>
-                <div class="risk-selector">
-                    <div class="risk-option low" onclick="selectRisk('low')">
-                        <div class="icon">🛡️</div>
-                        <div class="title">Baixo</div>
-                        <div class="details">2-3% por aposta<br>Odds: 1.50 - 2.00</div>
+
+            <div class="form-group">
+                <label>🎯 Estratégia de Gestão</label>
+                <div class="strategy-selector">
+                    <div class="strategy-option active" onclick="selectStrategy('kelly')">
+                        <div class="name">🎲 Kelly Criterion</div>
+                        <div class="description">Matemática comprovada. Maximiza crescimento no longo prazo. Ajusta stake baseado em edge e probabilidade.</div>
+                        <span class="tag">PROFISSIONAL</span>
                     </div>
-                    <div class="risk-option medium active" onclick="selectRisk('medium')">
-                        <div class="icon">⚖️</div>
-                        <div class="title">Médio</div>
-                        <div class="details">3-5% por aposta<br>Odds: 1.70 - 2.50</div>
+                    <div class="strategy-option" onclick="selectStrategy('kelly_fractional')">
+                        <div class="name">🛡️ Kelly Fracionário (1/4)</div>
+                        <div class="description">25% do Kelly completo. Mais conservador, reduz volatilidade. Ideal para iniciantes.</div>
+                        <span class="tag">RECOMENDADO</span>
                     </div>
-                    <div class="risk-option high" onclick="selectRisk('high')">
-                        <div class="icon">🚀</div>
-                        <div class="title">Alto</div>
-                        <div class="details">5-8% por aposta<br>Odds: 2.00 - 3.50</div>
+                    <div class="strategy-option" onclick="selectStrategy('fibonacci')">
+                        <div class="name">📈 Fibonacci Recovery</div>
+                        <div class="description">Progressão após perdas. Recupera gradualmente. Requer disciplina e banca maior.</div>
+                        <span class="tag">RECUPERAÇÃO</span>
+                    </div>
+                    <div class="strategy-option" onclick="selectStrategy('percentage')">
+                        <div class="name">📊 Percentage Staking</div>
+                        <div class="description">% fixo da banca. Simples e eficaz. Ajusta automaticamente ao crescimento.</div>
+                        <span class="tag">CONSERVADOR</span>
                     </div>
                 </div>
             </div>
@@ -241,22 +353,31 @@
             </button>
         </div>
 
-        <div class="stats-panel">
-            <div class="stat-card primary">
+        <div class="ai-panel">
+            <h2>🤖 Análise Inteligente & Sugestões</h2>
+            <div class="ai-suggestions" id="aiSuggestions"></div>
+            <div id="aiAlerts"></div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
                 <div class="label">💰 Banca Atual</div>
                 <div class="value" id="currentBankroll">R$ 0,00</div>
+                <div class="change" id="bankrollChange"></div>
             </div>
             <div class="stat-card" id="profitCard">
                 <div class="label">📊 Lucro/Prejuízo</div>
                 <div class="value" id="profitValue">R$ 0,00</div>
+                <div class="change" id="roiPercent"></div>
             </div>
             <div class="stat-card">
-                <div class="label">📈 Taxa de Acerto</div>
-                <div class="value" id="winRate">0%</div>
+                <div class="label">📈 Win Rate</div>
+                <div class="value" id="actualWinRate">0%</div>
+                <div class="change" id="winRateChange"></div>
             </div>
             <div class="stat-card">
-                <div class="label">📅 Total de Apostas</div>
-                <div class="value" id="totalBets">0</div>
+                <div class="label">🎯 Sequência Atual</div>
+                <div class="value" id="currentStreak">-</div>
             </div>
             <div class="stat-card positive">
                 <div class="label">✅ Vitórias</div>
@@ -266,27 +387,13 @@
                 <div class="label">❌ Derrotas</div>
                 <div class="value" id="totalLosses">0</div>
             </div>
-        </div>
-
-        <div class="suggestion-box">
-            <h3>💡 Sugestão para Próxima Aposta</h3>
-            <div class="suggestion-content">
-                <div class="suggestion-item">
-                    <div style="font-size: 13px;">Valor Sugerido</div>
-                    <strong id="suggestedStake">R$ 0,60</strong>
-                </div>
-                <div class="suggestion-item">
-                    <div style="font-size: 13px;">Percentual</div>
-                    <strong id="suggestedPercent">3%</strong>
-                </div>
-                <div class="suggestion-item">
-                    <div style="font-size: 13px;">Faixa de Odds</div>
-                    <strong id="suggestedOdds">1.70 - 2.50</strong>
-                </div>
-                <div class="suggestion-item">
-                    <div style="font-size: 13px;">Nível de Risco</div>
-                    <strong id="currentRisk">Médio</strong>
-                </div>
+            <div class="stat-card">
+                <div class="label">📅 Total Apostas</div>
+                <div class="value" id="totalBets">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">💎 Melhor Odd</div>
+                <div class="value" id="bestOdd">-</div>
             </div>
         </div>
 
@@ -296,97 +403,412 @@
         
         <div class="tab-content">
             <div id="tabContent"></div>
-            <div class="export-buttons">
-                <button class="btn btn-secondary" onclick="exportData()">📥 Exportar Dados (JSON)</button>
-                <button class="btn btn-danger" onclick="resetAll()">🗑️ Limpar Tudo</button>
-            </div>
+            <div class="analysis-panel" id="analysisPanel"></div>
         </div>
     </div>
 
     <script>
-        let config = { bankroll: 20, initialBankroll: 20, risk: 'medium' };
-        const strategies = {
-            low: { name: 'Baixo', icon: '🛡️', stakeMin: 2, stakeMax: 3, oddMin: 1.50, oddMax: 2.00 },
-            medium: { name: 'Médio', icon: '⚖️', stakeMin: 3, stakeMax: 5, oddMin: 1.70, oddMax: 2.50 },
-            high: { name: 'Alto', icon: '🚀', stakeMin: 5, stakeMax: 8, oddMin: 2.00, oddMax: 3.50 }
+        let config = {
+            bankroll: 20,
+            initialBankroll: 20,
+            strategy: 'kelly',
+            estimatedWinRate: 55,
+            fibonacciSequence: [1, 1],
+            fibonacciIndex: 0,
+            lastResult: null
         };
+
+        const strategies = {
+            kelly: {
+                name: 'Kelly Criterion',
+                description: 'Fórmula: (Win% × Odd - 1) / (Odd - 1)',
+                calculate: (bankroll, odd, winRate) => {
+                    const p = winRate / 100;
+                    const q = 1 - p;
+                    const b = odd - 1;
+                    const kelly = (p * b - q) / b;
+                    return Math.max(0, Math.min(0.25, kelly)) * bankroll; // Cap at 25%
+                }
+            },
+            kelly_fractional: {
+                name: 'Kelly Fracionário (1/4)',
+                description: '25% do Kelly completo - Mais seguro',
+                calculate: (bankroll, odd, winRate) => {
+                    const fullKelly = strategies.kelly.calculate(bankroll, odd, winRate);
+                    return fullKelly * 0.25;
+                }
+            },
+            fibonacci: {
+                name: 'Fibonacci Recovery',
+                description: 'Progressão 1,1,2,3,5,8... após perdas',
+                calculate: (bankroll, odd, winRate, fibIndex) => {
+                    const sequence = [1,1,2,3,5,8,13,21];
+                    const baseUnit = bankroll * 0.02; // 2% base
+                    return baseUnit * (sequence[fibIndex] || 1);
+                }
+            },
+            percentage: {
+                name: 'Percentage Staking',
+                description: '3-5% fixo da banca',
+                calculate: (bankroll, odd, winRate) => {
+                    const percent = winRate >= 60 ? 0.05 : winRate >= 55 ? 0.04 : 0.03;
+                    return bankroll * percent;
+                }
+            }
+        };
+
         let bettingData = {};
         let currentTab = null;
 
-        function loadData() {
-            const savedConfig = localStorage.getItem('bettingConfig');
-            const savedData = localStorage.getItem('bettingData');
-            if (savedConfig) {
-                config = JSON.parse(savedConfig);
-                document.getElementById('bankrollInput').value = config.bankroll;
-                selectRisk(config.risk, false);
+        // Análise Inteligente
+        function analyzePerformance() {
+            let allEntries = [];
+            Object.values(bettingData).forEach(day => {
+                allEntries = allEntries.concat(day.entries.filter(e => e.result !== 'pending'));
+            });
+
+            if (allEntries.length === 0) return null;
+
+            const wins = allEntries.filter(e => e.result === 'win').length;
+            const losses = allEntries.filter(e => e.result === 'loss').length;
+            const actualWinRate = (wins / allEntries.length) * 100;
+
+            // Calcular sequência atual
+            let currentStreak = 0;
+            let streakType = null;
+            for (let i = allEntries.length - 1; i >= 0; i--) {
+                const result = allEntries[i].result;
+                if (result === 'pending') continue;
+                if (!streakType) {
+                    streakType = result;
+                    currentStreak = 1;
+                } else if (result === streakType) {
+                    currentStreak++;
+                } else {
+                    break;
+                }
             }
-            if (savedData) bettingData = JSON.parse(savedData);
-            updateUI();
+
+            // Análise de odds
+            const avgWinOdd = allEntries
+                .filter(e => e.result === 'win')
+                .reduce((sum, e) => sum + e.odd, 0) / (wins || 1);
+            
+            const avgLossOdd = allEntries
+                .filter(e => e.result === 'loss')
+                .reduce((sum, e) => sum + e.odd, 0) / (losses || 1);
+
+            // Últimas 10 apostas
+            const last10 = allEntries.slice(-10);
+            const last10Wins = last10.filter(e => e.result === 'win').length;
+            const last10WinRate = (last10Wins / last10.length) * 100;
+
+            // ROI
+            const totalStaked = allEntries.reduce((sum, e) => sum + e.stake, 0);
+            const totalReturned = allEntries
+                .filter(e => e.result === 'win')
+                .reduce((sum, e) => sum + e.potentialReturn, 0);
+            const roi = ((totalReturned - totalStaked) / totalStaked) * 100;
+
+            // Melhor odd vencida
+            const bestWinOdd = Math.max(...allEntries.filter(e => e.result === 'win').map(e => e.odd), 0);
+
+            return {
+                totalBets: allEntries.length,
+                wins,
+                losses,
+                actualWinRate,
+                currentStreak,
+                streakType,
+                avgWinOdd,
+                avgLossOdd,
+                last10WinRate,
+                roi,
+                bestWinOdd,
+                totalStaked,
+                totalReturned
+            };
         }
 
-        function saveData() {
-            localStorage.setItem('bettingConfig', JSON.stringify(config));
-            localStorage.setItem('bettingData', JSON.stringify(bettingData));
+        // Sugestões Inteligentes
+        function generateAISuggestions() {
+            const analysis = analyzePerformance();
+            const strategy = strategies[config.strategy];
+            
+            // Calcular odds ideais baseado no win rate
+            const p = config.estimatedWinRate / 100;
+            const minOdd = 1 / p; // Break-even odd
+            const idealOdd = minOdd * 1.15; // 15% edge
+            const maxOdd = minOdd * 1.35; // 35% edge
+
+            let suggestions = {
+                stake: null,
+                minOdd: minOdd.toFixed(2),
+                idealOdd: idealOdd.toFixed(2),
+                maxOdd: maxOdd.toFixed(2),
+                maxBetsToday: 3,
+                confidence: 'medium'
+            };
+
+            // Calcular stake recomendado
+            const testOdd = parseFloat(idealOdd);
+            suggestions.stake = strategy.calculate(
+                config.bankroll, 
+                testOdd, 
+                config.estimatedWinRate,
+                config.fibonacciIndex
+            );
+
+            // Ajustar baseado em análise
+            if (analysis) {
+                // Se win rate real for menor que estimado, seja mais conservador
+                if (analysis.actualWinRate < config.estimatedWinRate - 5) {
+                    suggestions.stake *= 0.7;
+                    suggestions.confidence = 'low';
+                    suggestions.maxBetsToday = 2;
+                }
+
+                // Se em losing streak, aplicar Fibonacci ou reduzir
+                if (analysis.streakType === 'loss' && analysis.currentStreak >= 2) {
+                    if (config.strategy === 'fibonacci') {
+                        config.fibonacciIndex = Math.min(config.fibonacciIndex + 1, 7);
+                    } else {
+                        suggestions.stake *= 0.6;
+                        suggestions.maxBetsToday = 1;
+                    }
+                }
+
+                // Se em winning streak, pode aumentar levemente
+                if (analysis.streakType === 'win' && analysis.currentStreak >= 3) {
+                    suggestions.stake *= 1.1;
+                    suggestions.confidence = 'high';
+                    config.fibonacciIndex = 0; // Reset Fibonacci
+                }
+
+                // Últimas 10 apostas ruins? Parar!
+                if (analysis.last10WinRate < 40 && analysis.totalBets >= 10) {
+                    suggestions.maxBetsToday = 0;
+                    suggestions.confidence = 'danger';
+                }
+            }
+
+            // Limitar stake a 10% da banca
+            suggestions.stake = Math.min(suggestions.stake, config.bankroll * 0.10);
+
+            return suggestions;
         }
 
-        function selectRisk(risk, shouldSave = true) {
-            config.risk = risk;
-            document.querySelectorAll('.risk-option').forEach(opt => opt.classList.remove('active'));
-            document.querySelector(`.risk-option.${risk}`).classList.add('active');
-            if (shouldSave) updateSuggestion();
+        // Renderizar sugestões
+        function renderAISuggestions() {
+            const suggestions = generateAISuggestions();
+            const analysis = analyzePerformance();
+            const container = document.getElementById('aiSuggestions');
+            
+            container.innerHTML = `
+                <div class="ai-card">
+                    <h3>💵 Stake Recomendado</h3>
+                    <div class="value">R$ ${suggestions.stake.toFixed(2)}</div>
+                    <div class="detail">${((suggestions.stake / config.bankroll) * 100).toFixed(1)}% da banca</div>
+                </div>
+                <div class="ai-card">
+                    <h3>🎯 Faixa de Odds Ideal</h3>
+                    <div class="value">${suggestions.idealOdd}</div>
+                    <div class="detail">Min: ${suggestions.minOdd} | Máx: ${suggestions.maxOdd}</div>
+                </div>
+                <div class="ai-card">
+                    <h3>📊 Apostas Recomendadas Hoje</h3>
+                    <div class="value">${suggestions.maxBetsToday}</div>
+                    <div class="detail">Baseado em sua performance</div>
+                </div>
+                <div class="ai-card">
+                    <h3>🎲 Nível de Confiança</h3>
+                    <div class="value">${suggestions.confidence === 'high' ? '🟢 Alto' : 
+                                        suggestions.confidence === 'medium' ? '🟡 Médio' : 
+                                        suggestions.confidence === 'low' ? '🟠 Baixo' : '🔴 Perigo'}</div>
+                    <div class="detail">${analysis ? `Win Rate: ${analysis.actualWinRate.toFixed(1)}%` : 'Sem histórico'}</div>
+                </div>
+            `;
+
+            // Alertas
+            renderAlerts(suggestions, analysis);
+        }
+
+        function renderAlerts(suggestions, analysis) {
+            const container = document.getElementById('aiAlerts');
+            let alerts = [];
+
+            if (!analysis || analysis.totalBets < 20) {
+                alerts.push({
+                    type: 'warning',
+                    message: '⚠️ Dados insuficientes. Comece conservador até ter 20+ apostas no histórico.'
+                });
+            }
+
+            if (analysis) {
+                if (analysis.actualWinRate < config.estimatedWinRate - 10) {
+                    alerts.push({
+                        type: 'danger',
+                        message: `🚨 Seu win rate real (${analysis.actualWinRate.toFixed(1)}%) está muito abaixo da estimativa (${config.estimatedWinRate}%). Revise suas estratégias de seleção de apostas!`
+                    });
+                }
+
+                if (analysis.streakType === 'loss' && analysis.currentStreak >= 3) {
+                    alerts.push({
+                        type: 'danger',
+                        message: `⚠️ Sequência de ${analysis.currentStreak} derrotas. ${config.strategy === 'fibonacci' ? 'Sistema Fibonacci ativado para recuperação.' : 'Reduza o stake e seja mais seletivo!'}`
+                    });
+                }
+
+                if (analysis.streakType === 'win' && analysis.currentStreak >= 5) {
+                    alerts.push({
+                        type: 'success',
+                        message: `🎉 Excelente! ${analysis.currentStreak} vitórias seguidas. Mantenha a disciplina!`
+                    });
+                }
+
+                if (analysis.last10WinRate < 40 && analysis.totalBets >= 10) {
+                    alerts.push({
+                        type: 'danger',
+                        message: `🛑 PARE! Win rate das últimas 10 apostas: ${analysis.last10WinRate.toFixed(0)}%. Analise o que está errado antes de continuar.`
+                    });
+                }
+
+                if (config.bankroll < config.initialBankroll * 0.5) {
+                    alerts.push({
+                        type: 'danger',
+                        message: `💔 Banca caiu 50%. Considere parar e reavaliar sua estratégia ou recarregar.`
+                    });
+                }
+
+                if (analysis.roi > 20) {
+                    alerts.push({
+                        type: 'success',
+                        message: `🚀 ROI de ${analysis.roi.toFixed(1)}%! Você está no caminho certo. Continue assim!`
+                    });
+                }
+            }
+
+            if (suggestions.maxBetsToday === 0) {
+                alerts.push({
+                    type: 'danger',
+                    message: '🚫 Sistema recomenda PARAR de apostar hoje. Suas estatísticas recentes estão ruins.'
+                });
+            }
+
+            container.innerHTML = alerts.map(alert => `
+                <div class="ai-alert ${alert.type}">
+                    ${alert.message}
+                </div>
+            `).join('');
+        }
+
+        // Análise Detalhada
+        function renderAnalysis() {
+            const analysis = analyzePerformance();
+            const container = document.getElementById('analysisPanel');
+
+            if (!analysis || analysis.totalBets < 5) {
+                container.innerHTML = `
+                    <h3>📊 Análise Estatística</h3>
+                    <p style="color: #666;">Faça pelo menos 5 apostas para ver análises detalhadas.</p>
+                `;
+                return;
+            }
+
+            const edgePercent = ((analysis.avgWinOdd * (analysis.actualWinRate / 100)) - 1) * 100;
+
+            container.innerHTML = `
+                <h3>📊 Análise Estatística Detalhada</h3>
+                
+                <div class="analysis-item ${analysis.actualWinRate >= 55 ? '' : 'warning'}">
+                    <strong>Taxa de Acerto Real:</strong> ${analysis.actualWinRate.toFixed(1)}%<br>
+                    <small>Estimativa inicial: ${config.estimatedWinRate}% | Diferença: ${(analysis.actualWinRate - config.estimatedWinRate).toFixed(1)}%</small>
+                </div>
+
+                <div class="analysis-item ${analysis.roi > 0 ? '' : 'danger'}">
+                    <strong>ROI (Return on Investment):</strong> ${analysis.roi.toFixed(2)}%<br>
+                    <small>Total apostado: R$ ${analysis.totalStaked.toFixed(2)} | Retorno: R$ ${analysis.totalReturned.toFixed(2)}</small>
+                </div>
+
+                <div class="analysis-item">
+                    <strong>Análise de Odds:</strong><br>
+                    <small>
+                        Odd média vitórias: ${analysis.avgWinOdd.toFixed(2)} |
+                        Odd média derrotas: ${analysis.avgLossOdd.toFixed(2)} |
+                        Melhor odd vencida: ${analysis.bestWinOdd.toFixed(2)}
+                    </small>
+                </div>
+
+                <div class="analysis-item ${edgePercent > 0 ? '' : 'danger'}">
+                    <strong>Edge (Vantagem):</strong> ${edgePercent.toFixed(2)}%<br>
+                    <small>${edgePercent > 0 ? '✅ Você tem vantagem matemática!' : '❌ Você NÃO tem vantagem. Melhore a seleção de apostas!'}</small>
+                </div>
+
+                <div class="analysis-item">
+                    <strong>Performance Recente (últimas 10):</strong> ${analysis.last10WinRate.toFixed(0)}%<br>
+                    <small>${analysis.last10WinRate > analysis.actualWinRate + 10 ? '📈 Melhorando!' : 
+                             analysis.last10WinRate < analysis.actualWinRate - 10 ? '📉 Piorando! Cuidado!' : 
+                             '➡️ Estável'}</small>
+                </div>
+            `;
+        }
+
+        function selectStrategy(strategy) {
+            config.strategy = strategy;
+            document.querySelectorAll('.strategy-option').forEach(opt => opt.classList.remove('active'));
+            event.target.closest('.strategy-option').classList.add('active');
+            document.getElementById('currentStrategyBadge').textContent = strategies[strategy].name + ' Ativo';
+            renderAISuggestions();
         }
 
         function updateConfig() {
             const newBankroll = parseFloat(document.getElementById('bankrollInput').value);
+            const newWinRate = parseInt(document.getElementById('winRateInput').value);
+            
             if (newBankroll <= 0) { alert('A banca deve ser maior que zero!'); return; }
+            if (newWinRate < 30 || newWinRate > 80) { alert('Win rate deve estar entre 30% e 80%'); return; }
+            
             config.bankroll = newBankroll;
+            config.estimatedWinRate = newWinRate;
+            
             if (!config.initialBankroll) config.initialBankroll = newBankroll;
+            
             saveData();
             updateUI();
-            alert('✅ Configuração atualizada!');
-        }
-
-        function updateSuggestion() {
-            const strategy = strategies[config.risk];
-            const avgStakePercent = (strategy.stakeMin + strategy.stakeMax) / 2;
-            const suggestedStake = (config.bankroll * avgStakePercent) / 100;
-            document.getElementById('suggestedStake').textContent = `R$ ${suggestedStake.toFixed(2)}`;
-            document.getElementById('suggestedPercent').textContent = `${avgStakePercent.toFixed(1)}%`;
-            document.getElementById('suggestedOdds').textContent = `${strategy.oddMin} - ${strategy.oddMax}`;
-            document.getElementById('currentRisk').textContent = strategy.name;
+            alert('✅ Configuração atualizada! Sugestões recalculadas.');
         }
 
         function updateStats() {
-            let totalBets = 0, totalWins = 0, totalLosses = 0;
-            Object.values(bettingData).forEach(day => {
-                day.entries.forEach(entry => {
-                    totalBets++;
-                    if (entry.result === 'win') totalWins++;
-                    if (entry.result === 'loss') totalLosses++;
-                });
-            });
-            const winRate = totalBets > 0 ? (totalWins / totalBets * 100) : 0;
-            const profit = config.bankroll - config.initialBankroll;
+            const analysis = analyzePerformance();
+            
             document.getElementById('currentBankroll').textContent = `R$ ${config.bankroll.toFixed(2)}`;
+            
+            const profit = config.bankroll - config.initialBankroll;
+            const profitPercent = ((profit / config.initialBankroll) * 100).toFixed(1);
             document.getElementById('profitValue').textContent = `R$ ${Math.abs(profit).toFixed(2)}`;
-            document.getElementById('winRate').textContent = `${winRate.toFixed(1)}%`;
-            document.getElementById('totalBets').textContent = totalBets;
-            document.getElementById('totalWins').textContent = totalWins;
-            document.getElementById('totalLosses').textContent = totalLosses;
+            document.getElementById('roiPercent').innerHTML = `${profit >= 0 ? '📈' : '📉'} ${profitPercent}%`;
+            
             const profitCard = document.getElementById('profitCard');
             profitCard.className = 'stat-card';
             if (profit > 0) profitCard.classList.add('positive');
             if (profit < 0) profitCard.classList.add('negative');
-        }
 
-        function getToday() {
-            return new Date().toISOString().split('T')[0];
-        }
+            if (analysis) {
+                document.getElementById('actualWinRate').textContent = `${analysis.actualWinRate.toFixed(1)}%`;
+                document.getElementById('totalBets').textContent = analysis.totalBets;
+                document.getElementById('totalWins').textContent = analysis.wins;
+                document.getElementById('totalLosses').textContent = analysis.losses;
+                document.getElementById('bestOdd').textContent = analysis.bestWinOdd > 0 ? analysis.bestWinOdd.toFixed(2) : '-';
+                
+                const streakIcon = analysis.streakType === 'win' ? '🔥' : '❄️';
+                document.getElementById('currentStreak').textContent = analysis.currentStreak > 0 ? 
+                    `${streakIcon} ${analysis.currentStreak}` : '-';
 
-        function formatDate(dateStr) {
-            const [year, month, day] = dateStr.split('-');
-            return `${day}/${month}/${year}`;
+                const wrDiff = analysis.actualWinRate - config.estimatedWinRate;
+                document.getElementById('winRateChange').innerHTML = wrDiff >= 0 ? 
+                    `<span class="up">▲ ${Math.abs(wrDiff).toFixed(1)}%</span>` :
+                    `<span class="down">▼ ${Math.abs(wrDiff).toFixed(1)}%</span>`;
+            }
         }
 
         function renderTabs() {
@@ -394,7 +816,7 @@
             const today = getToday();
             if (!dates.includes(today)) {
                 dates.unshift(today);
-                bettingData[today] = { entries: [], dayStartBankroll: config.bankroll };
+                bettingData[today] = { entries: [] };
             }
             const tabButtons = document.getElementById('tabButtons');
             tabButtons.innerHTML = dates.map((date, index) => `
@@ -414,31 +836,48 @@
 
         function renderTabContent(date) {
             currentTab = date;
-            if (!bettingData[date]) bettingData[date] = { entries: [], dayStartBankroll: config.bankroll };
+            if (!bettingData[date]) bettingData[date] = { entries: [] };
+            
             const day = bettingData[date];
-            const strategy = strategies[config.risk];
-            const avgStakePercent = (strategy.stakeMin + strategy.stakeMax) / 2;
-            const suggestedStake = (config.bankroll * avgStakePercent) / 100;
+            const suggestions = generateAISuggestions();
+            const betsToday = day.entries.length;
+            const canBet = betsToday < suggestions.maxBetsToday;
+
             const content = document.getElementById('tabContent');
             content.innerHTML = `
-                <div class="add-entry-form">
-                    <h3 style="margin-bottom: 15px; color: #333;">➕ Nova Aposta - ${formatDate(date)}</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Descrição</label>
-                            <input type="text" id="entryDesc" placeholder="Ex: Flamengo vs Palmeiras">
+                <div style="background: ${canBet ? '#f0fdf4' : '#fef2f2'}; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid ${canBet ? '#10b981' : '#ef4444'};">
+                    <h3 style="margin-bottom: 15px; color: #1e3a8a;">
+                        ${canBet ? '➕ Nova Aposta' : '🚫 Limite Atingido'} - ${formatDate(date)}
+                    </h3>
+                    ${canBet ? `
+                        <p style="margin-bottom: 15px; color: #666; font-size: 14px;">
+                            <strong>Apostas hoje: ${betsToday}/${suggestions.maxBetsToday}</strong> |
+                            Stake sugerido: <strong style="color: #7c3aed;">R$ ${suggestions.stake.toFixed(2)}</strong> |
+                            Odds ideais: <strong style="color: #7c3aed;">${suggestions.minOdd} - ${suggestions.maxOdd}</strong>
+                        </p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Descrição</label>
+                                <input type="text" id="entryDesc" placeholder="Ex: Flamengo vs Palmeiras">
+                            </div>
+                            <div class="form-group">
+                                <label>Odd (Min: ${suggestions.minOdd} | Ideal: ${suggestions.idealOdd})</label>
+                                <input type="number" id="entryOdd" step="0.01" placeholder="Ex: ${suggestions.idealOdd}">
+                            </div>
+                            <div class="form-group">
+                                <label>Valor (R$) - Sugerido: ${suggestions.stake.toFixed(2)}</label>
+                                <input type="number" id="entryStake" step="0.01" value="${suggestions.stake.toFixed(2)}">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Odd (Recomendado: ${strategy.oddMin} - ${strategy.oddMax})</label>
-                            <input type="number" id="entryOdd" step="0.01" placeholder="Ex: 1.85">
-                        </div>
-                        <div class="form-group">
-                            <label>Valor (R$) - Sugestão: R$ ${suggestedStake.toFixed(2)}</label>
-                            <input type="number" id="entryStake" step="0.01" value="${suggestedStake.toFixed(2)}">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="addEntry()">Adicionar Aposta</button>
+                        <button class="btn btn-primary" onclick="addEntry()">Adicionar Aposta</button>
+                    ` : `
+                        <p style="color: #dc2626; font-weight: 600;">
+                            ⚠️ Limite diário de apostas atingido (${suggestions.maxBetsToday}). 
+                            ${suggestions.maxBetsToday === 0 ? 'O sistema recomenda NÃO apostar hoje devido à performance recente.' : 'Aguarde até amanhã ou melhore seu desempenho.'}
+                        </p>
+                    `}
                 </div>
+                
                 ${day.entries.length === 0 ? `
                     <div class="empty-state">
                         <div class="icon">📝</div>
@@ -451,7 +890,7 @@
                                 <th>Descrição</th>
                                 <th>Odd</th>
                                 <th>Valor</th>
-                                <th>Retorno Potencial</th>
+                                <th>Retorno</th>
                                 <th>Status</th>
                                 <th>Ações</th>
                             </tr>
@@ -490,12 +929,24 @@
             const desc = document.getElementById('entryDesc').value;
             const odd = parseFloat(document.getElementById('entryOdd').value);
             const stake = parseFloat(document.getElementById('entryStake').value);
-            const strategy = strategies[config.risk];
+            const suggestions = generateAISuggestions();
             
             if (!desc || !odd || !stake) { alert('Preencha todos os campos!'); return; }
             if (stake > config.bankroll) { alert('Valor maior que a banca disponível!'); return; }
-            if (odd < strategy.oddMin || odd > strategy.oddMax) {
-                if (!confirm(`⚠️ Odd fora da faixa recomendada (${strategy.oddMin} - ${strategy.oddMax}). Continuar?`)) return;
+            
+            // Validação de odd
+            if (odd < parseFloat(suggestions.minOdd)) {
+                if (!confirm(`⚠️ Odd ${odd} está abaixo do mínimo recomendado (${suggestions.minOdd}). Essa odd não oferece valor matemático suficiente. Continuar?`)) return;
+            }
+            
+            if (odd > parseFloat(suggestions.maxOdd)) {
+                if (!confirm(`⚠️ Odd ${odd} está acima do máximo recomendado (${suggestions.maxOdd}). Odds muito altas têm menos probabilidade. Continuar?`)) return;
+            }
+
+            // Validação de stake
+            const maxStake = suggestions.stake * 1.5;
+            if (stake > maxStake) {
+                if (!confirm(`⚠️ Valor R$ ${stake} está acima do recomendado (máx R$ ${maxStake.toFixed(2)}). Isso viola a gestão de banca. Continuar?`)) return;
             }
             
             const entry = {
@@ -504,12 +955,15 @@
                 stake: stake,
                 potentialReturn: stake * odd,
                 result: 'pending',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                strategy: config.strategy
             };
             
             bettingData[currentTab].entries.push(entry);
+            config.lastResult = null;
             saveData();
             renderTabContent(currentTab);
+            renderAISuggestions();
             alert('✅ Aposta adicionada!');
         }
 
@@ -518,13 +972,26 @@
             if (entry.result !== 'pending') { alert('Esta aposta já foi finalizada!'); return; }
             
             entry.result = result;
+            config.lastResult = result;
+            
             if (result === 'win') {
                 config.bankroll += entry.potentialReturn;
+                if (config.strategy === 'fibonacci') {
+                    config.fibonacciIndex = Math.max(0, config.fibonacciIndex - 1);
+                }
+            } else {
+                if (config.strategy === 'fibonacci') {
+                    config.fibonacciIndex = Math.min(config.fibonacciIndex + 1, 7);
+                }
             }
             
             saveData();
             updateUI();
-            alert(result === 'win' ? '🎉 Aposta vencida!' : '❌ Aposta perdida.');
+            
+            const message = result === 'win' ? 
+                `🎉 Aposta vencida! +R$ ${(entry.potentialReturn - entry.stake).toFixed(2)}` :
+                `❌ Aposta perdida. -R$ ${entry.stake.toFixed(2)}`;
+            alert(message);
         }
 
         function deleteEntry(index) {
@@ -540,29 +1007,39 @@
             updateUI();
         }
 
-        function exportData() {
-            const dataStr = JSON.stringify({ config, bettingData }, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `gestao-banca-${getToday()}.json`;
-            a.click();
-        }
-
-        function resetAll() {
-            if (!confirm('⚠️ ATENÇÃO: Isso vai apagar TODOS os dados! Tem certeza?')) return;
-            localStorage.clear();
-            config = { bankroll: 20, initialBankroll: 20, risk: 'medium' };
-            bettingData = {};
-            updateUI();
-            alert('✅ Dados limpos!');
-        }
-
         function updateUI() {
-            updateSuggestion();
+            document.getElementById('bankrollInput').value = config.bankroll.toFixed(2);
+            renderAISuggestions();
             updateStats();
             renderTabs();
+            renderAnalysis();
+        }
+
+        function getToday() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function saveData() {
+            localStorage.setItem('bettingConfig', JSON.stringify(config));
+            localStorage.setItem('bettingData', JSON.stringify(bettingData));
+        }
+
+        function loadData() {
+            const savedConfig = localStorage.getItem('bettingConfig');
+            const savedData = localStorage.getItem('bettingData');
+            if (savedConfig) {
+                config = JSON.parse(savedConfig);
+                document.getElementById('bankrollInput').value = config.bankroll;
+                document.getElementById('winRateInput').value = config.estimatedWinRate;
+                selectStrategy(config.strategy);
+            }
+            if (savedData) bettingData = JSON.parse(savedData);
+            updateUI();
         }
 
         window.onload = loadData;
