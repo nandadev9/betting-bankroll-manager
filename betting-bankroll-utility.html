@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Banca - Apostas Esportivas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .header h1 { color: #667eea; font-size: 32px; margin-bottom: 5px; }
+        .header p { color: #666; }
+        .config-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .risk-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .risk-option {
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .risk-option:hover { border-color: #667eea; transform: translateY(-2px); }
+        .risk-option.active { border-color: #667eea; background: #f0f4ff; }
+        .risk-option.low.active { border-color: #10b981; background: #f0fdf4; }
+        .risk-option.medium.active { border-color: #f59e0b; background: #fef3c7; }
+        .risk-option.high.active { border-color: #ef4444; background: #fef2f2; }
+        .risk-option .icon { font-size: 32px; margin-bottom: 10px; }
+        .risk-option .title { font-weight: 700; font-size: 16px; margin-bottom: 5px; }
+        .risk-option .details { font-size: 12px; color: #666; }
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card .label { font-size: 13px; color: #666; margin-bottom: 8px; }
+        .stat-card .value { font-size: 26px; font-weight: 700; color: #333; }
+        .stat-card.positive .value { color: #10b981; }
+        .stat-card.negative .value { color: #ef4444; }
+        .stat-card.primary .value { color: #667eea; }
+        .suggestion-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .suggestion-box h3 { margin-bottom: 15px; font-size: 20px; }
+        .suggestion-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .suggestion-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .suggestion-item strong { display: block; font-size: 24px; margin-bottom: 5px; }
+        .tabs {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px 20px 0 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .tab-buttons { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; }
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover { background: #e5e7eb; }
+        .tab-btn.active { background: #667eea; color: white; }
+        .tab-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .add-entry-form {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        .btn-success { background: #10b981; color: white; padding: 8px 16px; font-size: 13px; }
+        .btn-danger { background: #ef4444; color: white; padding: 8px 16px; font-size: 13px; }
+        .btn-secondary { background: #6b7280; color: white; padding: 8px 16px; font-size: 13px; }
+        .entries-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .entries-table th {
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+        }
+        .entries-table td { padding: 15px 12px; border-bottom: 1px solid #e5e7eb; }
+        .entries-table tr:hover { background: #f9fafb; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-win { background: #d1fae5; color: #065f46; }
+        .status-loss { background: #fee2e2; color: #991b1b; }
+        .actions { display: flex; gap: 8px; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
+        .empty-state .icon { font-size: 64px; margin-bottom: 20px; opacity: 0.3; }
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .config-grid, .risk-selector, .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Gestão de Banca - Apostas Esportivas</h1>
+            <p>Sistema inteligente de gerenciamento com sugestões automáticas por nível de risco</p>
+        </div>
+
+        <div class="config-panel">
+            <h2 style="color: #333; margin-bottom: 20px;">⚙️ Configuração da Banca</h2>
+            <div class="config-grid">
+                <div class="form-group">
+                    <label>💵 Valor da Banca (R$)</label>
+                    <input type="number" id="bankrollInput" value="20" step="0.01" min="1">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>🎯 Nível de Risco</label>
+                <div class="risk-selector">
+                    <div class="risk-option low" onclick="selectRisk('low')">
+                        <div class="icon">🛡️</div>
+                        <div class="title">Baixo</div>
+                        <div class="details">2-3% por aposta<br>Odds: 1.50 - 2.00</div>
+                    </div>
+                    <div class="risk-option medium active" onclick="selectRisk('medium')">
+                        <div class="icon">⚖️</div>
+                        <div class="title">Médio</div>
+                        <div class="details">3-5% por aposta<br>Odds: 1.70 - 2.50</div>
+                    </div>
+                    <div class="risk-option high" onclick="selectRisk('high')">
+                        <div class="icon">🚀</div>
+                        <div class="title">Alto</div>
+                        <div class="details">5-8% por aposta<br>Odds: 2.00 - 3.50</div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="updateConfig()" style="margin-top: 20px; width: 100%;">
+                Atualizar Configuração
+            </button>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-card primary">
+                <div class="label">💰 Banca Atual</div>
+                <div class="value" id="currentBankroll">R$ 0,00</div>
+            </div>
+            <div class="stat-card" id="profitCard">
+                <div class="label">📊 Lucro/Prejuízo</div>
+                <div class="value" id="profitValue">R$ 0,00</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">📈 Taxa de Acerto</div>
+                <div class="value" id="winRate">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">📅 Total de Apostas</div>
+                <div class="value" id="totalBets">0</div>
+            </div>
+            <div class="stat-card positive">
+                <div class="label">✅ Vitórias</div>
+                <div class="value" id="totalWins">0</div>
+            </div>
+            <div class="stat-card negative">
+                <div class="label">❌ Derrotas</div>
+                <div class="value" id="totalLosses">0</div>
+            </div>
+        </div>
+
+        <div class="suggestion-box">
+            <h3>💡 Sugestão para Próxima Aposta</h3>
+            <div class="suggestion-content">
+                <div class="suggestion-item">
+                    <div style="font-size: 13px;">Valor Sugerido</div>
+                    <strong id="suggestedStake">R$ 0,60</strong>
+                </div>
+                <div class="suggestion-item">
+                    <div style="font-size: 13px;">Percentual</div>
+                    <strong id="suggestedPercent">3%</strong>
+                </div>
+                <div class="suggestion-item">
+                    <div style="font-size: 13px;">Faixa de Odds</div>
+                    <strong id="suggestedOdds">1.70 - 2.50</strong>
+                </div>
+                <div class="suggestion-item">
+                    <div style="font-size: 13px;">Nível de Risco</div>
+                    <strong id="currentRisk">Médio</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-buttons" id="tabButtons"></div>
+        </div>
+        
+        <div class="tab-content">
+            <div id="tabContent"></div>
+            <div class="export-buttons">
+                <button class="btn btn-secondary" onclick="exportData()">📥 Exportar Dados (JSON)</button>
+                <button class="btn btn-danger" onclick="resetAll()">🗑️ Limpar Tudo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let config = { bankroll: 20, initialBankroll: 20, risk: 'medium' };
+        const strategies = {
+            low: { name: 'Baixo', icon: '🛡️', stakeMin: 2, stakeMax: 3, oddMin: 1.50, oddMax: 2.00 },
+            medium: { name: 'Médio', icon: '⚖️', stakeMin: 3, stakeMax: 5, oddMin: 1.70, oddMax: 2.50 },
+            high: { name: 'Alto', icon: '🚀', stakeMin: 5, stakeMax: 8, oddMin: 2.00, oddMax: 3.50 }
+        };
+        let bettingData = {};
+        let currentTab = null;
+
+        function loadData() {
+            const savedConfig = localStorage.getItem('bettingConfig');
+            const savedData = localStorage.getItem('bettingData');
+            if (savedConfig) {
+                config = JSON.parse(savedConfig);
+                document.getElementById('bankrollInput').value = config.bankroll;
+                selectRisk(config.risk, false);
+            }
+            if (savedData) bettingData = JSON.parse(savedData);
+            updateUI();
+        }
+
+        function saveData() {
+            localStorage.setItem('bettingConfig', JSON.stringify(config));
+            localStorage.setItem('bettingData', JSON.stringify(bettingData));
+        }
+
+        function selectRisk(risk, shouldSave = true) {
+            config.risk = risk;
+            document.querySelectorAll('.risk-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelector(`.risk-option.${risk}`).classList.add('active');
+            if (shouldSave) updateSuggestion();
+        }
+
+        function updateConfig() {
+            const newBankroll = parseFloat(document.getElementById('bankrollInput').value);
+            if (newBankroll <= 0) { alert('A banca deve ser maior que zero!'); return; }
+            config.bankroll = newBankroll;
+            if (!config.initialBankroll) config.initialBankroll = newBankroll;
+            saveData();
+            updateUI();
+            alert('✅ Configuração atualizada!');
+        }
+
+        function updateSuggestion() {
+            const strategy = strategies[config.risk];
+            const avgStakePercent = (strategy.stakeMin + strategy.stakeMax) / 2;
+            const suggestedStake = (config.bankroll * avgStakePercent) / 100;
+            document.getElementById('suggestedStake').textContent = `R$ ${suggestedStake.toFixed(2)}`;
+            document.getElementById('suggestedPercent').textContent = `${avgStakePercent.toFixed(1)}%`;
+            document.getElementById('suggestedOdds').textContent = `${strategy.oddMin} - ${strategy.oddMax}`;
+            document.getElementById('currentRisk').textContent = strategy.name;
+        }
+
+        function updateStats() {
+            let totalBets = 0, totalWins = 0, totalLosses = 0;
+            Object.values(bettingData).forEach(day => {
+                day.entries.forEach(entry => {
+                    totalBets++;
+                    if (entry.result === 'win') totalWins++;
+                    if (entry.result === 'loss') totalLosses++;
+                });
+            });
+            const winRate = totalBets > 0 ? (totalWins / totalBets * 100) : 0;
+            const profit = config.bankroll - config.initialBankroll;
+            document.getElementById('currentBankroll').textContent = `R$ ${config.bankroll.toFixed(2)}`;
+            document.getElementById('profitValue').textContent = `R$ ${Math.abs(profit).toFixed(2)}`;
+            document.getElementById('winRate').textContent = `${winRate.toFixed(1)}%`;
+            document.getElementById('totalBets').textContent = totalBets;
+            document.getElementById('totalWins').textContent = totalWins;
+            document.getElementById('totalLosses').textContent = totalLosses;
+            const profitCard = document.getElementById('profitCard');
+            profitCard.className = 'stat-card';
+            if (profit > 0) profitCard.classList.add('positive');
+            if (profit < 0) profitCard.classList.add('negative');
+        }
+
+        function getToday() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function renderTabs() {
+            const dates = Object.keys(bettingData).sort().reverse();
+            const today = getToday();
+            if (!dates.includes(today)) {
+                dates.unshift(today);
+                bettingData[today] = { entries: [], dayStartBankroll: config.bankroll };
+            }
+            const tabButtons = document.getElementById('tabButtons');
+            tabButtons.innerHTML = dates.map((date, index) => `
+                <button class="tab-btn ${index === 0 ? 'active' : ''}" onclick="switchTab('${date}')">
+                    ${date === today ? '📅 Hoje' : formatDate(date)}
+                </button>
+            `).join('');
+            if (dates.length > 0) renderTabContent(dates[0]);
+        }
+
+        function switchTab(date) {
+            currentTab = date;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTabContent(date);
+        }
+
+        function renderTabContent(date) {
+            currentTab = date;
+            if (!bettingData[date]) bettingData[date] = { entries: [], dayStartBankroll: config.bankroll };
+            const day = bettingData[date];
+            const strategy = strategies[config.risk];
+            const avgStakePercent = (strategy.stakeMin + strategy.stakeMax) / 2;
+            const suggestedStake = (config.bankroll * avgStakePercent) / 100;
+            const content = document.getElementById('tabContent');
+            content.innerHTML = `
+                <div class="add-entry-form">
+                    <h3 style="margin-bottom: 15px; color: #333;">➕ Nova Aposta - ${formatDate(date)}</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <input type="text" id="entryDesc" placeholder="Ex: Flamengo vs Palmeiras">
+                        </div>
+                        <div class="form-group">
+                            <label>Odd (Recomendado: ${strategy.oddMin} - ${strategy.oddMax})</label>
+                            <input type="number" id="entryOdd" step="0.01" placeholder="Ex: 1.85">
+                        </div>
+                        <div class="form-group">
+                            <label>Valor (R$) - Sugestão: R$ ${suggestedStake.toFixed(2)}</label>
+                            <input type="number" id="entryStake" step="0.01" value="${suggestedStake.toFixed(2)}">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addEntry()">Adicionar Aposta</button>
+                </div>
+                ${day.entries.length === 0 ? `
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <p>Nenhuma aposta registrada neste dia.</p>
+                    </div>
+                ` : `
+                    <table class="entries-table">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Odd</th>
+                                <th>Valor</th>
+                                <th>Retorno Potencial</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${day.entries.map((entry, index) => `
+                                <tr>
+                                    <td><strong>${entry.description}</strong></td>
+                                    <td>${entry.odd.toFixed(2)}</td>
+                                    <td>R$ ${entry.stake.toFixed(2)}</td>
+                                    <td>R$ ${entry.potentialReturn.toFixed(2)}</td>
+                                    <td>
+                                        <span class="status-badge status-${entry.result}">
+                                            ${entry.result === 'pending' ? '⏳ Pendente' : 
+                                              entry.result === 'win' ? '✅ Ganhou' : '❌ Perdeu'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="actions">
+                                            ${entry.result === 'pending' ? `
+                                                <button class="btn btn-success" onclick="markResult(${index}, 'win')">✅</button>
+                                                <button class="btn btn-danger" onclick="markResult(${index}, 'loss')">❌</button>
+                                            ` : ''}
+                                            <button class="btn btn-secondary" onclick="deleteEntry(${index})">🗑️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `}
+            `;
+        }
+
+        function addEntry() {
+            const desc = document.getElementById('entryDesc').value;
+            const odd = parseFloat(document.getElementById('entryOdd').value);
+            const stake = parseFloat(document.getElementById('entryStake').value);
+            const strategy = strategies[config.risk];
+            
+            if (!desc || !odd || !stake) { alert('Preencha todos os campos!'); return; }
+            if (stake > config.bankroll) { alert('Valor maior que a banca disponível!'); return; }
+            if (odd < strategy.oddMin || odd > strategy.oddMax) {
+                if (!confirm(`⚠️ Odd fora da faixa recomendada (${strategy.oddMin} - ${strategy.oddMax}). Continuar?`)) return;
+            }
+            
+            const entry = {
+                description: desc,
+                odd: odd,
+                stake: stake,
+                potentialReturn: stake * odd,
+                result: 'pending',
+                timestamp: new Date().toISOString()
+            };
+            
+            bettingData[currentTab].entries.push(entry);
+            saveData();
+            renderTabContent(currentTab);
+            alert('✅ Aposta adicionada!');
+        }
+
+        function markResult(index, result) {
+            const entry = bettingData[currentTab].entries[index];
+            if (entry.result !== 'pending') { alert('Esta aposta já foi finalizada!'); return; }
+            
+            entry.result = result;
+            if (result === 'win') {
+                config.bankroll += entry.potentialReturn;
+            }
+            
+            saveData();
+            updateUI();
+            alert(result === 'win' ? '🎉 Aposta vencida!' : '❌ Aposta perdida.');
+        }
+
+        function deleteEntry(index) {
+            if (!confirm('Tem certeza que deseja deletar esta entrada?')) return;
+            const entry = bettingData[currentTab].entries[index];
+            if (entry.result === 'pending') {
+                config.bankroll += entry.stake;
+            } else if (entry.result === 'win') {
+                config.bankroll -= entry.potentialReturn;
+            }
+            bettingData[currentTab].entries.splice(index, 1);
+            saveData();
+            updateUI();
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify({ config, bettingData }, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gestao-banca-${getToday()}.json`;
+            a.click();
+        }
+
+        function resetAll() {
+            if (!confirm('⚠️ ATENÇÃO: Isso vai apagar TODOS os dados! Tem certeza?')) return;
+            localStorage.clear();
+            config = { bankroll: 20, initialBankroll: 20, risk: 'medium' };
+            bettingData = {};
+            updateUI();
+            alert('✅ Dados limpos!');
+        }
+
+        function updateUI() {
+            updateSuggestion();
+            updateStats();
+            renderTabs();
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
