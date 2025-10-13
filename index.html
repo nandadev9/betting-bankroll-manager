@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criteryon</title>
+    <title>Criteryon - Sistema de Gestão de Apostas</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -21,6 +21,8 @@
             padding: 20px 0;
             border-bottom: 1px solid #333;
             margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         h1 { color: #F5B342; font-size: 28px; }
         .btn {
@@ -39,6 +41,8 @@
         .btn-success { background: #00E396; padding: 8px 16px; font-size: 13px; }
         .btn-danger { background: #FF4560; padding: 8px 16px; font-size: 13px; color: #FFF; }
         .btn-warning { background: #FEB019; padding: 8px 16px; font-size: 13px; color: #000; }
+        .btn-info { background: #3b82f6; padding: 8px 16px; font-size: 13px; color: #FFF; }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .card {
             background: #1A1A1A;
@@ -87,7 +91,7 @@
             margin-bottom: 5px;
             text-transform: uppercase;
         }
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 12px;
             background: #0A0A0A;
@@ -96,7 +100,7 @@
             color: #FFF;
             font-size: 14px;
         }
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: #F5B342;
         }
@@ -230,15 +234,17 @@
             padding: 60px 20px;
             color: #666;
         }
-        .debug {
-            background: #1A1A1A;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            font-family: monospace;
+        .save-status {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
             font-size: 12px;
-            color: #999;
+            font-weight: 600;
+            background: #10b981;
+            color: white;
+        }
+        .save-status.error {
+            background: #ef4444;
         }
     </style>
 </head>
@@ -248,10 +254,12 @@
         <div class="header">
             <div>
                 <h1>CRITERYON</h1>
-                
+                <p style="color: #666; font-size: 14px;">Sistema de Gestão de Apostas Esportivas</p>
+                <span class="save-status" id="saveStatus">✅ Dados Salvos</span>
             </div>
-            <div>
+            <div class="header-actions">
                 <button class="btn btn-secondary" onclick="openConfigModal()">⚙️ Config</button>
+                <button class="btn btn-info" onclick="openImportModal()">📤 Importar</button>
                 <button class="btn btn-secondary" onclick="exportData()">📥 Exportar</button>
                 <button class="btn" onclick="manualSave()">💾 Salvar</button>
             </div>
@@ -360,9 +368,6 @@
             <div class="tabs" id="tabButtons"></div>
             <div class="card" id="tabContent"></div>
         </div>
-
-        <!-- Debug Info -->
-        <div class="debug" id="debugInfo" style="display: none;"></div>
     </div>
 
     <!-- Config Modal -->
@@ -423,8 +428,8 @@
         <div class="modal-content">
             <div class="modal-title">📤 Importar Backup</div>
             <div class="form-group">
-                <label>Cole o JSON:</label>
-                <textarea id="importData" rows="10" style="width: 100%; background: #0A0A0A; border: 1px solid #333; border-radius: 8px; padding: 12px; color: #FFF; font-family: monospace;"></textarea>
+                <label>Cole o JSON do backup:</label>
+                <textarea id="importData" rows="10" style="width: 100%; background: #0A0A0A; border: 1px solid #333; border-radius: 8px; padding: 12px; color: #FFF; font-family: monospace;" placeholder='{"config": {...}, "bettingData": {...}}'></textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeImportModal()">Cancelar</button>
@@ -472,7 +477,6 @@
                     const q = 1 - p;
                     const b = odd - 1;
                     const kelly = (p * b - q) / b;
-                    // Limitar a 25% para segurança
                     return Math.max(0, Math.min(0.25, kelly)) * bankroll;
                 }
             },
@@ -489,7 +493,7 @@
                 description: 'Progressão de Fibonacci para recuperação',
                 calculate: (bankroll, odd, winRate, fibIndex) => {
                     const sequence = [1, 1, 2, 3, 5, 8, 13, 21];
-                    const baseUnit = bankroll * 0.02; // 2% como unidade base
+                    const baseUnit = bankroll * 0.02;
                     return baseUnit * (sequence[fibIndex] || 1);
                 }
             },
@@ -497,7 +501,6 @@
                 name: 'Percentage Staking',
                 description: 'Percentual fixo da banca',
                 calculate: (bankroll, odd, winRate) => {
-                    // Percentual varia com win rate
                     const percent = winRate >= 60 ? 0.05 : winRate >= 55 ? 0.04 : 0.03;
                     return bankroll * percent;
                 }
@@ -513,41 +516,26 @@
         // FUNÇÕES DE ANÁLISE E CÁLCULO
         // ============================================
 
-        /**
-         * Retorna o dia da semana de uma data
-         */
         function getDayOfWeek(dateStr) {
             const days = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
             const date = new Date(dateStr + 'T12:00:00');
             return days[date.getDay()];
         }
 
-        /**
-         * Retorna o número máximo de apostas recomendadas para um dia
-         */
         function getMaxBetsForDay(dateStr) {
             const dayName = getDayOfWeek(dateStr);
             const freq = MATCH_FREQUENCY.brasil[dayName];
             
-            // Dias de alto volume: 5 apostas
             if (freq.min >= 15) return 5;
-            // Dias de médio volume: 3 apostas
             if (freq.min >= 10) return 3;
-            // Dias de baixo volume: 2 apostas
             return 2;
         }
 
-        /**
-         * Verifica se é um dia de alto volume de jogos
-         */
         function isHighVolumeDay(dateStr) {
             const dayName = getDayOfWeek(dateStr);
             return MATCH_FREQUENCY.brasil[dayName].min >= 15;
         }
 
-        /**
-         * Calcula valores financeiros (investido, lucro, prejuízo)
-         */
         function calculateFinancials() {
             let invested = 0;
             let totalProfit = 0;
@@ -558,24 +546,19 @@
             Object.values(bettingData).forEach(day => {
                 day.entries.forEach(entry => {
                     if (entry.result === 'pending') {
-                        // Apostas pendentes = valor investido
                         invested += entry.stake;
                     } else if (entry.result === 'win') {
-                        // Vitórias = lucro líquido
                         const profit = entry.potentialReturn - entry.stake;
                         totalProfit += profit;
                         profitCount++;
                     } else if (entry.result === 'loss') {
-                        // Derrotas = prejuízo total
                         totalLoss += entry.stake;
                         lossCount++;
                     } else if (entry.result === 'cashout-win') {
-                        // Cashout com ganho
                         const profit = entry.cashoutAmount - entry.stake;
                         totalProfit += profit;
                         profitCount++;
                     } else if (entry.result === 'cashout-loss') {
-                        // Cashout com perda parcial
                         const loss = entry.stake - entry.cashoutAmount;
                         totalLoss += loss;
                         lossCount++;
@@ -593,20 +576,15 @@
             };
         }
 
-        /**
-         * Analisa performance histórica das apostas
-         */
         function analyzePerformance() {
             let allEntries = [];
             
-            // Coletar todas as apostas finalizadas
             Object.values(bettingData).forEach(day => {
                 allEntries = allEntries.concat(day.entries.filter(e => e.result !== 'pending'));
             });
 
             if (allEntries.length === 0) return null;
 
-            // Contar vitórias e derrotas
             const wins = allEntries.filter(e => 
                 e.result === 'win' || e.result === 'cashout-win'
             ).length;
@@ -614,10 +592,8 @@
                 e.result === 'loss' || e.result === 'cashout-loss'
             ).length;
             
-            // Calcular win rate real
             const actualWinRate = (wins / allEntries.length) * 100;
 
-            // Calcular sequência atual (streak)
             let currentStreak = 0;
             let streakType = null;
             for (let i = allEntries.length - 1; i >= 0; i--) {
@@ -635,7 +611,6 @@
                 }
             }
 
-            // Análise das últimas 10 apostas
             const last10 = allEntries.slice(-10);
             const last10Wins = last10.filter(e => 
                 e.result === 'win' || e.result === 'cashout-win'
@@ -653,31 +628,23 @@
             };
         }
 
-        /**
-         * Gera sugestões inteligentes de apostas
-         */
         function generateAISuggestions() {
             const analysis = analyzePerformance();
             const strategy = strategies[config.strategy];
             const today = getToday();
             
-            // Determinar qual win rate usar
             let useWinRate = config.estimatedWinRate;
             if (analysis && analysis.totalBets >= 20) {
-                // Após 20 apostas, usa win rate real
                 useWinRate = analysis.actualWinRate;
             } else if (analysis && analysis.totalBets >= 10) {
-                // Entre 10-20 apostas, usa média ponderada
                 useWinRate = (config.estimatedWinRate * 0.6) + (analysis.actualWinRate * 0.4);
             }
 
-            // Calcular odds ideais baseado no win rate
             const p = useWinRate / 100;
-            const minOdd = 1 / p; // Break-even odd
-            const idealOdd = minOdd * 1.15; // 15% de edge
-            const maxOdd = minOdd * 1.35; // 35% de edge máximo
+            const minOdd = 1 / p;
+            const idealOdd = minOdd * 1.15;
+            const maxOdd = minOdd * 1.35;
 
-            // Determinar número máximo de apostas para hoje
             let maxBetsToday = getMaxBetsForDay(today);
 
             let suggestions = {
@@ -691,7 +658,6 @@
                 useWinRate: useWinRate
             };
 
-            // Calcular stake recomendado
             const testOdd = parseFloat(idealOdd);
             suggestions.stake = strategy.calculate(
                 config.availableBalance,
@@ -700,16 +666,13 @@
                 config.fibonacciIndex
             );
 
-            // Ajustes baseados em análise
             if (analysis) {
-                // Se win rate real está abaixo do estimado, reduzir stakes
                 if (analysis.actualWinRate < config.estimatedWinRate - 5) {
                     suggestions.stake *= 0.7;
                     suggestions.confidence = 'low';
                     suggestions.maxBetsToday = Math.max(1, Math.floor(suggestions.maxBetsToday * 0.6));
                 }
 
-                // Losing streak: aplicar Fibonacci ou reduzir
                 if (analysis.streakType === 'loss' && analysis.currentStreak >= 2) {
                     if (config.strategy === 'fibonacci') {
                         config.fibonacciIndex = Math.min(config.fibonacciIndex + 1, 7);
@@ -719,34 +682,27 @@
                     }
                 }
 
-                // Winning streak: aumentar levemente
                 if (analysis.streakType === 'win' && analysis.currentStreak >= 3) {
                     suggestions.stake *= 1.1;
                     suggestions.confidence = 'high';
-                    config.fibonacciIndex = 0; // Reset Fibonacci
+                    config.fibonacciIndex = 0;
                 }
 
-                // Últimas 10 apostas ruins: PARAR
                 if (analysis.last10WinRate < 40 && analysis.totalBets >= 10) {
                     suggestions.maxBetsToday = 0;
                     suggestions.confidence = 'danger';
                 }
             }
 
-            // Limites de segurança
-            suggestions.stake = Math.min(suggestions.stake, config.availableBalance * 0.10); // Máx 10%
-            suggestions.stake = Math.min(suggestions.stake, config.availableBalance); // Não exceder disponível
+            suggestions.stake = Math.min(suggestions.stake, config.availableBalance * 0.10);
+            suggestions.stake = Math.min(suggestions.stake, config.availableBalance);
 
             return suggestions;
         }
 
-        /**
-         * Gera alertas inteligentes baseado na análise
-         */
         function generateAlerts(suggestions, analysis) {
             let alerts = [];
 
-            // Alert de dia com alto volume
             if (suggestions.dayType === 'high') {
                 const dayName = getDayOfWeek(getToday());
                 const dayLabel = MATCH_FREQUENCY.brasil[dayName].label;
@@ -756,7 +712,6 @@
                 });
             }
 
-            // Alert de win rate real ativo
             if (analysis && analysis.totalBets >= 20) {
                 alerts.push({
                     type: 'success',
@@ -769,7 +724,6 @@
                 });
             }
 
-            // Alert de losing streak
             if (analysis && analysis.streakType === 'loss' && analysis.currentStreak >= 3) {
                 alerts.push({
                     type: 'danger',
@@ -777,7 +731,6 @@
                 });
             }
 
-            // Alert de performance ruim recente
             if (analysis && analysis.last10WinRate < 40 && analysis.totalBets >= 10) {
                 alerts.push({
                     type: 'danger',
@@ -785,7 +738,6 @@
                 });
             }
 
-            // Alert de valor muito investido
             const financials = calculateFinancials();
             if (financials.invested > config.availableBalance * 0.5) {
                 alerts.push({
@@ -794,7 +746,6 @@
                 });
             }
 
-            // Alert de banca baixa
             if (config.bankroll < config.initialBankroll * 0.5) {
                 alerts.push({
                     type: 'danger',
@@ -809,16 +760,12 @@
         // FUNÇÕES DE MANIPULAÇÃO DE APOSTAS
         // ============================================
 
-        /**
-         * Adiciona uma nova aposta
-         */
         function addEntry() {
             const desc = document.getElementById('entryDesc').value.trim();
             const odd = parseFloat(document.getElementById('entryOdd').value);
             const stake = parseFloat(document.getElementById('entryStake').value);
             const suggestions = generateAISuggestions();
             
-            // Validações
             if (!desc || !odd || !stake) {
                 alert('⚠️ Preencha todos os campos!');
                 return;
@@ -844,7 +791,6 @@
                 return;
             }
             
-            // Aviso de odd fora da faixa recomendada
             if (odd < parseFloat(suggestions.minOdd)) {
                 if (!confirm(`⚠️ Odd ${odd.toFixed(2)} está abaixo do mínimo recomendado (${suggestions.minOdd}).\n\nEssa odd não oferece valor matemático suficiente para seu win rate.\n\nContinuar mesmo assim?`)) {
                     return;
@@ -857,7 +803,6 @@
                 }
             }
             
-            // Criar aposta
             const entry = {
                 description: desc,
                 odd: odd,
@@ -870,27 +815,20 @@
                 useWinRate: suggestions.useWinRate
             };
             
-            // DESCONTAR DO SALDO DISPONÍVEL
             config.availableBalance -= stake;
             
-            // Adicionar ao dia atual
             bettingData[currentTab].entries.push(entry);
             
-            // Salvar e atualizar UI
             saveData();
             renderTabContent(currentTab);
             updateUI();
             
-            // Limpar formulário
             document.getElementById('entryDesc').value = '';
             document.getElementById('entryOdd').value = '';
             
             console.log(`[APOSTA ADICIONADA] Stake: R$ ${stake.toFixed(2)} | Saldo: R$ ${config.availableBalance.toFixed(2)}`);
         }
 
-        /**
-         * Marca resultado de uma aposta (ganhou ou perdeu)
-         */
         function markResult(index, result) {
             const entry = bettingData[currentTab].entries[index];
             
@@ -903,21 +841,17 @@
             entry.settledAt = new Date().toISOString();
             
             if (result === 'win') {
-                // VITÓRIA: devolver stake + lucro ao saldo disponível
                 config.availableBalance += entry.potentialReturn;
                 config.bankroll += (entry.potentialReturn - entry.stake);
                 
-                // Fibonacci: voltar uma posição
                 if (config.strategy === 'fibonacci') {
                     config.fibonacciIndex = Math.max(0, config.fibonacciIndex - 1);
                 }
                 
                 console.log(`[VITÓRIA] +R$ ${(entry.potentialReturn - entry.stake).toFixed(2)} | Saldo: R$ ${config.availableBalance.toFixed(2)}`);
             } else {
-                // DERROTA: apenas atualizar banca total (stake já foi descontado)
                 config.bankroll -= entry.stake;
                 
-                // Fibonacci: avançar uma posição
                 if (config.strategy === 'fibonacci') {
                     config.fibonacciIndex = Math.min(config.fibonacciIndex + 1, 7);
                 }
@@ -935,29 +869,19 @@
             alert(message);
         }
 
-        /**
-         * Abre modal de cashout
-         */
         function openCashoutModal(index) {
             currentCashoutBetIndex = index;
             const entry = bettingData[currentTab].entries[index];
             
-            // Preencher valor padrão (stake original)
             document.getElementById('cashoutAmount').value = entry.stake.toFixed(2);
             document.getElementById('cashoutModal').classList.add('active');
         }
 
-        /**
-         * Fecha modal de cashout
-         */
         function closeCashoutModal() {
             currentCashoutBetIndex = null;
             document.getElementById('cashoutModal').classList.remove('active');
         }
 
-        /**
-         * Confirma cashout
-         */
         function confirmCashout() {
             if (currentCashoutBetIndex === null) return;
             
@@ -975,22 +899,17 @@
                 return;
             }
             
-            // Definir resultado
             entry.result = result === 'win' ? 'cashout-win' : 'cashout-loss';
             entry.cashoutAmount = amount;
             entry.settledAt = new Date().toISOString();
             
-            // DEVOLVER VALOR DO CASHOUT AO SALDO DISPONÍVEL
             config.availableBalance += amount;
             
-            // Atualizar banca total
             if (result === 'win') {
-                // Ganho parcial
                 const profit = amount - entry.stake;
                 config.bankroll += profit;
                 console.log(`[CASHOUT WIN] +R$ ${profit.toFixed(2)} | Recebido: R$ ${amount.toFixed(2)}`);
             } else {
-                // Perda parcial
                 const loss = entry.stake - amount;
                 config.bankroll -= loss;
                 console.log(`[CASHOUT LOSS] -R$ ${loss.toFixed(2)} | Recuperado: R$ ${amount.toFixed(2)}`);
@@ -1007,39 +926,29 @@
             alert(message);
         }
 
-        /**
-         * Deleta uma aposta
-         */
         function deleteEntry(index) {
             if (!confirm('🗑️ Tem certeza que deseja deletar esta aposta?')) return;
             
             const entry = bettingData[currentTab].entries[index];
             
-            // Reverter valores baseado no status
             if (entry.result === 'pending') {
-                // Devolver stake ao saldo disponível
                 config.availableBalance += entry.stake;
                 console.log(`[DELETE PENDING] Devolvido: R$ ${entry.stake.toFixed(2)}`);
             } else if (entry.result === 'win') {
-                // Remover lucro
                 config.availableBalance -= entry.potentialReturn;
                 config.bankroll -= (entry.potentialReturn - entry.stake);
                 console.log(`[DELETE WIN] Removido: R$ ${(entry.potentialReturn - entry.stake).toFixed(2)}`);
             } else if (entry.result === 'loss') {
-                // Devolver prejuízo
                 config.bankroll += entry.stake;
                 console.log(`[DELETE LOSS] Devolvido: R$ ${entry.stake.toFixed(2)}`);
             } else if (entry.result === 'cashout-win') {
-                // Remover cashout ganho
                 config.availableBalance -= entry.cashoutAmount;
                 config.bankroll -= (entry.cashoutAmount - entry.stake);
             } else if (entry.result === 'cashout-loss') {
-                // Remover cashout perda
                 config.availableBalance -= entry.cashoutAmount;
                 config.bankroll += (entry.stake - entry.cashoutAmount);
             }
             
-            // Remover entrada
             bettingData[currentTab].entries.splice(index, 1);
             
             saveData();
@@ -1050,16 +959,12 @@
         // FUNÇÕES DE RENDERIZAÇÃO
         // ============================================
 
-        /**
-         * Renderiza sugestões de IA
-         */
         function renderAISuggestions() {
             const suggestions = generateAISuggestions();
             const analysis = analyzePerformance();
             const dayName = getDayOfWeek(getToday());
             const dayLabel = MATCH_FREQUENCY.brasil[dayName].label;
             
-            // Atualizar cards de sugestão
             document.getElementById('suggestedStake').textContent = `R$ ${suggestions.stake.toFixed(2)}`;
             document.getElementById('stakePercent').textContent = `${((suggestions.stake / config.bankroll) * 100).toFixed(1)}% da carteira`;
             
@@ -1075,7 +980,6 @@
             document.getElementById('confidenceLevel').textContent = confidenceEmoji;
             document.getElementById('strategyInfo').textContent = strategies[config.strategy].name;
             
-            // Renderizar alertas
             const alerts = generateAlerts(suggestions, analysis);
             const alertsContainer = document.getElementById('aiAlerts');
             alertsContainer.innerHTML = alerts.map(alert => `
@@ -1083,37 +987,28 @@
             `).join('');
         }
 
-        /**
-         * Atualiza estatísticas
-         */
         function updateStats() {
             const analysis = analyzePerformance();
             const financials = calculateFinancials();
             
-            // Carteira
             document.getElementById('totalBankroll').textContent = `R$ ${config.bankroll.toFixed(2)}`;
             const change = config.bankroll - config.initialBankroll;
             const changePercent = ((change / config.initialBankroll) * 100).toFixed(2);
             const changeClass = change >= 0 ? 'success' : 'danger';
             document.getElementById('bankrollChange').innerHTML = `<span class="${changeClass}">${change >= 0 ? '▲' : '▼'} R$ ${Math.abs(change).toFixed(2)} (${change >= 0 ? '+' : ''}${changePercent}%)</span>`;
             
-            // Saldo disponível
             document.getElementById('availableBalance').textContent = `R$ ${config.availableBalance.toFixed(2)}`;
             document.getElementById('availablePercent').textContent = `${((config.availableBalance / config.bankroll) * 100).toFixed(1)}% da carteira`;
             
-            // Valor investido
             document.getElementById('investedAmount').textContent = `R$ ${financials.invested.toFixed(2)}`;
             document.getElementById('investedPercent').textContent = `${((financials.invested / config.bankroll) * 100).toFixed(1)}% investido`;
             
-            // Lucro
             document.getElementById('totalProfit').textContent = `R$ ${financials.totalProfit.toFixed(2)}`;
             document.getElementById('profitCount').textContent = `${financials.profitCount} ${financials.profitCount === 1 ? 'vitória' : 'vitórias'}`;
             
-            // Prejuízo
             document.getElementById('totalLoss').textContent = `R$ ${financials.totalLoss.toFixed(2)}`;
             document.getElementById('lossCount').textContent = `${financials.lossCount} ${financials.lossCount === 1 ? 'derrota' : 'derrotas'}`;
             
-            // Win rate
             if (analysis) {
                 document.getElementById('actualWinRate').textContent = `${analysis.actualWinRate.toFixed(1)}%`;
                 
@@ -1129,13 +1024,9 @@
                 document.getElementById('winRateHint').textContent = 'Sem histórico';
             }
             
-            // Barras de distribuição
             updateDistributionBars(financials);
         }
 
-        /**
-         * Atualiza barras de distribuição
-         */
         function updateDistributionBars(financials) {
             const availPercent = Math.max(5, (config.availableBalance / config.bankroll) * 100);
             const investPercent = Math.max(5, (financials.invested / config.bankroll) * 100);
@@ -1155,14 +1046,10 @@
             document.getElementById('barLossLabel').textContent = `R$ ${financials.totalLoss.toFixed(2)}`;
         }
 
-        /**
-         * Renderiza abas de dias
-         */
         function renderTabs() {
             const dates = Object.keys(bettingData).sort().reverse();
             const today = getToday();
             
-            // Criar dia de hoje se não existir
             if (!dates.includes(today)) {
                 dates.unshift(today);
                 bettingData[today] = { entries: [] };
@@ -1187,9 +1074,6 @@
             }
         }
 
-        /**
-         * Troca de aba
-         */
         function switchTab(date) {
             currentTab = date;
             document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
@@ -1197,9 +1081,6 @@
             renderTabContent(date);
         }
 
-        /**
-         * Renderiza conteúdo da aba
-         */
         function renderTabContent(date) {
             currentTab = date;
             if (!bettingData[date]) {
@@ -1213,7 +1094,6 @@
             
             const content = document.getElementById('tabContent');
             
-            // Caixa de sugestão
             let suggestionBox = '';
             if (canBet) {
                 suggestionBox = `
@@ -1241,7 +1121,6 @@
                 `;
             }
             
-            // Formulário de nova aposta
             let formSection = '';
             if (canBet) {
                 formSection = `
@@ -1280,12 +1159,11 @@
                 `;
             }
             
-            // Tabela de apostas
             let tableSection = '';
             if (day.entries.length === 0) {
                 tableSection = `
                     <div class="empty-state">
-                        <div style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;">📝</div>
+                        <div style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;">📋</div>
                         <p>Nenhuma aposta registrada neste dia.</p>
                     </div>
                 `;
@@ -1349,31 +1227,10 @@
             content.innerHTML = suggestionBox + formSection + tableSection;
         }
 
-        /**
-         * Atualiza toda a UI
-         */
         function updateUI() {
             renderAISuggestions();
             updateStats();
             renderTabs();
-            updateDebugInfo();
-        }
-
-        /**
-         * Atualiza informações de debug
-         */
-        function updateDebugInfo() {
-            const debugInfo = {
-                bankroll: config.bankroll.toFixed(2),
-                available: config.availableBalance.toFixed(2),
-                strategy: config.strategy,
-                winRate: config.estimatedWinRate,
-                fibonacci: config.fibonacciIndex,
-                totalDays: Object.keys(bettingData).length,
-                totalEntries: Object.values(bettingData).reduce((sum, day) => sum + day.entries.length, 0)
-            };
-            
-            document.getElementById('debugInfo').textContent = JSON.stringify(debugInfo, null, 2);
         }
 
         // ============================================
@@ -1417,7 +1274,6 @@
                 return;
             }
             
-            // Ajustar saldo disponível proporcionalmente
             const oldBankroll = config.bankroll;
             const diff = newBankroll - oldBankroll;
             config.availableBalance += diff;
@@ -1446,27 +1302,38 @@
 
         function importData() {
             try {
-                const jsonStr = document.getElementById('importData').value;
-                const data = JSON.parse(jsonStr);
+                const jsonStr = document.getElementById('importData').value.trim();
                 
-                if (!data.config || !data.bettingData) {
-                    alert('❌ Formato de backup inválido!');
+                if (!jsonStr) {
+                    alert('⚠️ Cole o JSON do backup no campo de texto!');
                     return;
                 }
                 
-                if (confirm('⚠️ Isso vai SUBSTITUIR todos os dados atuais. Confirma?')) {
-                    config = data.config;
-                    bettingData = data.bettingData;
-                    
-                    saveData();
-                    updateUI();
-                    closeImportModal();
-                    
-                    alert('✅ Dados importados com sucesso!');
+                const data = JSON.parse(jsonStr);
+                
+                if (!data.config || !data.bettingData) {
+                    alert('❌ Formato de backup inválido! Certifique-se de que o JSON contém "config" e "bettingData".');
+                    return;
                 }
+                
+                if (!confirm('⚠️ ATENÇÃO: Isso vai SUBSTITUIR todos os dados atuais.\n\nTem certeza que deseja continuar?')) {
+                    return;
+                }
+                
+                config = data.config;
+                bettingData = data.bettingData;
+                
+                saveData();
+                updateUI();
+                closeImportModal();
+                
+                document.getElementById('importData').value = '';
+                
+                alert('✅ Dados importados com sucesso!');
+                
             } catch (e) {
-                alert('❌ Erro ao importar! Verifique se o JSON está correto.');
-                console.error(e);
+                console.error('Erro ao importar:', e);
+                alert('❌ Erro ao importar dados!\n\nVerifique se o JSON está correto e no formato válido.\n\nErro: ' + e.message);
             }
         }
 
@@ -1494,31 +1361,54 @@
                 if (hasLocalStorage) {
                     localStorage.setItem('bettingConfig', JSON.stringify(config));
                     localStorage.setItem('bettingData', JSON.stringify(bettingData));
+                    updateSaveStatus(true);
+                } else {
+                    document.cookie = `bettingConfig=${encodeURIComponent(JSON.stringify(config))}; max-age=31536000; path=/`;
+                    document.cookie = `bettingData=${encodeURIComponent(JSON.stringify(bettingData))}; max-age=31536000; path=/`;
+                    updateSaveStatus(true);
                 }
                 
                 console.log('[SAVE] Dados salvos:', new Date().toLocaleTimeString());
                 return true;
             } catch (e) {
                 console.error('[SAVE ERROR]', e);
+                updateSaveStatus(false);
                 return false;
             }
         }
 
         function loadData() {
             try {
+                let loadedConfig = null;
+                let loadedData = null;
+
                 if (hasLocalStorage) {
                     const savedConfig = localStorage.getItem('bettingConfig');
                     const savedData = localStorage.getItem('bettingData');
                     
-                    if (savedConfig) {
-                        config = JSON.parse(savedConfig);
-                        console.log('[LOAD] Config carregada');
+                    if (savedConfig) loadedConfig = JSON.parse(savedConfig);
+                    if (savedData) loadedData = JSON.parse(savedData);
+                } else {
+                    const cookies = document.cookie.split(';');
+                    for (let cookie of cookies) {
+                        const [name, value] = cookie.trim().split('=');
+                        if (name === 'bettingConfig') {
+                            loadedConfig = JSON.parse(decodeURIComponent(value));
+                        }
+                        if (name === 'bettingData') {
+                            loadedData = JSON.parse(decodeURIComponent(value));
+                        }
                     }
-                    
-                    if (savedData) {
-                        bettingData = JSON.parse(savedData);
-                        console.log('[LOAD] Dados carregados');
-                    }
+                }
+                
+                if (loadedConfig) {
+                    config = loadedConfig;
+                    console.log('[LOAD] Config carregada');
+                }
+                
+                if (loadedData) {
+                    bettingData = loadedData;
+                    console.log('[LOAD] Dados carregados');
                 }
                 
                 updateUI();
@@ -1526,6 +1416,22 @@
             } catch (e) {
                 console.error('[LOAD ERROR]', e);
                 return false;
+            }
+        }
+
+        function updateSaveStatus(success) {
+            const status = document.getElementById('saveStatus');
+            if (success) {
+                status.className = 'save-status';
+                if (config.lastSave) {
+                    const time = new Date(config.lastSave).toLocaleTimeString('pt-BR');
+                    status.textContent = `✅ Salvo ${time}`;
+                } else {
+                    status.textContent = '✅ Dados Salvos';
+                }
+            } else {
+                status.className = 'save-status error';
+                status.textContent = '❌ Erro ao Salvar';
             }
         }
 
@@ -1542,7 +1448,7 @@
                 config: config,
                 bettingData: bettingData,
                 exportDate: new Date().toISOString(),
-                version: '4.0-criteryon-backend'
+                version: '4.1-criteryon-fixed'
             };
             
             const dataStr = JSON.stringify(data, null, 2);
@@ -1554,7 +1460,7 @@
             a.click();
             URL.revokeObjectURL(url);
             
-            alert('✅ Backup exportado!');
+            alert('✅ Backup exportado com sucesso!\n\nGuarde este arquivo em local seguro.');
         }
 
         // ============================================
@@ -1574,17 +1480,14 @@
         // INICIALIZAÇÃO
         // ============================================
 
-        // Auto-save a cada 30 segundos
         setInterval(() => {
             saveData();
         }, 30000);
 
-        // Inicializar ao carregar
         window.onload = function() {
-            console.log('[INIT] Criteryon Backend v4.0');
+            console.log('[INIT] Criteryon v4.1 - Backend Corrigido');
             loadData();
             
-            // Salvar antes de sair
             window.addEventListener('beforeunload', () => {
                 saveData();
             });
