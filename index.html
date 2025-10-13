@@ -83,6 +83,7 @@
         .alert-success { background: rgba(0, 227, 150, 0.1); border-color: #00E396; color: #00E396; }
         .alert-warning { background: rgba(254, 176, 25, 0.1); border-color: #FEB019; color: #FEB019; }
         .alert-danger { background: rgba(255, 69, 96, 0.1); border-color: #FF4560; color: #FF4560; }
+        .alert-info { background: rgba(59, 130, 246, 0.1); border-color: #3b82f6; color: #3b82f6; }
         .form-group { margin-bottom: 15px; }
         .form-group label {
             display: block;
@@ -246,6 +247,70 @@
         .save-status.error {
             background: #ef4444;
         }
+        .strategy-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .strategy-badge.auto {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .strategy-badge.manual {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+        }
+        .strategy-explanation {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #8bb8ff;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #10b981;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
 <body>
@@ -256,12 +321,29 @@
                 <h1>CRITERYON</h1>
                 <p style="color: #666; font-size: 14px;">Sistema de Gestão de Apostas Esportivas</p>
                 <span class="save-status" id="saveStatus">✅ Dados Salvos</span>
+                <span class="strategy-badge auto" id="strategyBadge">🤖 Estratégia Automática</span>
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="openConfigModal()">⚙️ Config</button>
                 <button class="btn btn-info" onclick="openImportModal()">📤 Importar</button>
                 <button class="btn btn-secondary" onclick="exportData()">📥 Exportar</button>
                 <button class="btn" onclick="manualSave()">💾 Salvar</button>
+            </div>
+        </div>
+
+        <!-- Strategy Explanation Card -->
+        <div class="section">
+            <div class="card">
+                <div class="card-title">🎯 Estratégia Atual</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h3 style="color: #F5B342; font-size: 20px; margin-bottom: 5px;" id="currentStrategyName">Kelly Fracionário</h3>
+                        <p style="color: #999; font-size: 13px;" id="currentStrategyDesc">Descrição da estratégia</p>
+                    </div>
+                </div>
+                <div class="strategy-explanation" id="strategyExplanation">
+                    Analisando seu momento...
+                </div>
             </div>
         </div>
 
@@ -385,15 +467,30 @@
                     <small id="winRateHintConfig" style="color: #666; font-size: 11px;"></small>
                 </div>
             </div>
+            
             <div class="form-group">
-                <label>Estratégia</label>
+                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <span>Estratégia Automática</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoStrategyToggle" checked onchange="toggleAutoStrategy()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </label>
+                <div class="alert alert-info" style="font-size: 12px; margin-bottom: 15px;">
+                    ℹ️ <strong>Modo Automático:</strong> O sistema analisa sua performance e escolhe a melhor estratégia para cada momento.
+                </div>
+            </div>
+
+            <div class="form-group" id="manualStrategyGroup" style="display: none;">
+                <label>Estratégia Manual</label>
                 <select id="strategySelect">
-                    <option value="kelly">Kelly Criterion</option>
-                    <option value="kelly_fractional">Kelly Fracionário (1/4)</option>
-                    <option value="fibonacci">Fibonacci Recovery</option>
-                    <option value="percentage">Percentage Staking</option>
+                    <option value="kelly">Kelly Criterion (Agressivo)</option>
+                    <option value="kelly_fractional">Kelly Fracionário (Equilibrado)</option>
+                    <option value="fibonacci">Fibonacci Recovery (Recuperação)</option>
+                    <option value="percentage">Percentage Staking (Conservador)</option>
                 </select>
             </div>
+            
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeConfigModal()">Cancelar</button>
                 <button class="btn" onclick="updateConfig()">Salvar</button>
@@ -443,7 +540,6 @@
         // BACKEND - LÓGICA PRINCIPAL
         // ============================================
 
-        // Dados de incidência de jogos por dia
         const MATCH_FREQUENCY = {
             brasil: {
                 segunda: { min: 3, max: 5, label: 'Segunda' },
@@ -456,22 +552,23 @@
             }
         };
 
-        // Configuração global
         let config = {
             bankroll: 20,
             initialBankroll: 20,
             availableBalance: 20,
-            strategy: 'kelly',
+            strategy: 'kelly_fractional',
             estimatedWinRate: 55,
             fibonacciIndex: 0,
-            lastSave: null
+            lastSave: null,
+            autoStrategy: true  // NOVO: modo automático ativado por padrão
         };
 
-        // Estratégias de gestão de banca
         const strategies = {
             kelly: {
                 name: 'Kelly Criterion',
-                description: 'Fórmula matemática que maximiza crescimento',
+                description: 'Agressivo - Maximiza crescimento no longo prazo',
+                emoji: '🚀',
+                risk: 'high',
                 calculate: (bankroll, odd, winRate) => {
                     const p = winRate / 100;
                     const q = 1 - p;
@@ -481,8 +578,10 @@
                 }
             },
             kelly_fractional: {
-                name: 'Kelly Fracionário (1/4)',
-                description: 'Kelly reduzido para menor volatilidade',
+                name: 'Kelly Fracionário',
+                description: 'Equilibrado - 25% do Kelly, menor volatilidade',
+                emoji: '⚖️',
+                risk: 'medium',
                 calculate: (bankroll, odd, winRate) => {
                     const fullKelly = strategies.kelly.calculate(bankroll, odd, winRate);
                     return fullKelly * 0.25;
@@ -490,7 +589,9 @@
             },
             fibonacci: {
                 name: 'Fibonacci Recovery',
-                description: 'Progressão de Fibonacci para recuperação',
+                description: 'Recuperação - Progressão após perdas',
+                emoji: '🔄',
+                risk: 'medium',
                 calculate: (bankroll, odd, winRate, fibIndex) => {
                     const sequence = [1, 1, 2, 3, 5, 8, 13, 21];
                     const baseUnit = bankroll * 0.02;
@@ -499,7 +600,9 @@
             },
             percentage: {
                 name: 'Percentage Staking',
-                description: 'Percentual fixo da banca',
+                description: 'Conservador - Percentual fixo da banca',
+                emoji: '🛡️',
+                risk: 'low',
                 calculate: (bankroll, odd, winRate) => {
                     const percent = winRate >= 60 ? 0.05 : winRate >= 55 ? 0.04 : 0.03;
                     return bankroll * percent;
@@ -507,10 +610,151 @@
             }
         };
 
-        // Dados de apostas por dia
         let bettingData = {};
         let currentTab = null;
         let currentCashoutBetIndex = null;
+
+        // ============================================
+        // SISTEMA DE ESTRATÉGIA AUTOMÁTICA
+        // ============================================
+
+        /**
+         * Analisa a situação atual e recomenda a melhor estratégia
+         */
+        function analyzeStrategyRecommendation() {
+            const analysis = analyzePerformance();
+            const financials = calculateFinancials();
+            
+            // Sem histórico suficiente: equilibrado
+            if (!analysis || analysis.totalBets < 5) {
+                return {
+                    strategy: 'kelly_fractional',
+                    reason: 'Iniciando com estratégia equilibrada. Faça mais apostas para análise detalhada.',
+                    scenario: 'inicial'
+                };
+            }
+
+            const profitPercent = ((config.bankroll - config.initialBankroll) / config.initialBankroll) * 100;
+            const bankrollPercent = (config.bankroll / config.initialBankroll) * 100;
+            const winRate = analysis.actualWinRate;
+            const streak = analysis.currentStreak;
+            const streakType = analysis.streakType;
+
+            // CENÁRIO CRÍTICO: Proteger a banca
+            if (bankrollPercent < 70 || winRate < 35 || (streakType === 'loss' && streak >= 4)) {
+                return {
+                    strategy: 'percentage',
+                    reason: `🛡️ MODO PROTEÇÃO ATIVADO: ${
+                        bankrollPercent < 70 ? `Banca em ${bankrollPercent.toFixed(0)}% do inicial. ` : ''
+                    }${
+                        winRate < 35 ? `Win rate muito baixo (${winRate.toFixed(0)}%). ` : ''
+                    }${
+                        streakType === 'loss' && streak >= 4 ? `${streak} derrotas seguidas. ` : ''
+                    }Stakes conservadores para preservar capital.`,
+                    scenario: 'critico'
+                };
+            }
+
+            // CENÁRIO DE RECUPERAÇÃO: Fibonacci
+            if (streakType === 'loss' && streak >= 2 && profitPercent < 0) {
+                return {
+                    strategy: 'fibonacci',
+                    reason: `🔄 MODO RECUPERAÇÃO: ${streak} derrota(s) seguida(s) e prejuízo de ${Math.abs(profitPercent).toFixed(1)}%. Sistema Fibonacci vai recuperar gradualmente.`,
+                    scenario: 'recuperacao'
+                };
+            }
+
+            // CENÁRIO EXCELENTE: Kelly Full (agressivo)
+            if (winRate >= 60 && profitPercent >= 20 && streakType === 'win' && streak >= 3) {
+                return {
+                    strategy: 'kelly',
+                    reason: `🚀 MOMENTO EXCEPCIONAL: Win rate de ${winRate.toFixed(0)}%, lucro de ${profitPercent.toFixed(1)}% e ${streak} vitórias seguidas. Maximizando crescimento!`,
+                    scenario: 'excelente'
+                };
+            }
+
+            // CENÁRIO BOM: Kelly Full moderado
+            if (winRate >= 55 && profitPercent >= 10 && bankrollPercent >= 110) {
+                return {
+                    strategy: 'kelly',
+                    reason: `🚀 MOMENTO POSITIVO: Win rate ${winRate.toFixed(0)}% e lucro de ${profitPercent.toFixed(1)}%. Aproveitando momento com Kelly.`,
+                    scenario: 'bom'
+                };
+            }
+
+            // CENÁRIO PROTEGER LUCRO: Kelly Fracionário
+            if (profitPercent >= 50) {
+                return {
+                    strategy: 'kelly_fractional',
+                    reason: `⚖️ PROTEGENDO LUCRO: Você já tem ${profitPercent.toFixed(1)}% de lucro! Kelly Fracionário mantém crescimento sem arriscar muito.`,
+                    scenario: 'proteção_lucro'
+                };
+            }
+
+            // PADRÃO: Kelly Fracionário (equilibrado)
+            return {
+                strategy: 'kelly_fractional',
+                reason: `⚖️ MODO EQUILIBRADO: Win rate ${winRate.toFixed(0)}%, ${profitPercent >= 0 ? 'lucro' : 'prejuízo'} de ${Math.abs(profitPercent).toFixed(1)}%. Kelly Fracionário oferece bom equilíbrio risco/retorno.`,
+                scenario: 'equilibrado'
+            };
+        }
+
+        /**
+         * Aplica estratégia automática se habilitado
+         */
+        function applyAutoStrategy() {
+            if (!config.autoStrategy) return;
+            
+            const recommendation = analyzeStrategyRecommendation();
+            
+            // Só muda se for diferente da atual
+            if (config.strategy !== recommendation.strategy) {
+                console.log(`[AUTO STRATEGY] Mudando de ${config.strategy} para ${recommendation.strategy}`);
+                config.strategy = recommendation.strategy;
+                saveData();
+            }
+        }
+
+        /**
+         * Alterna modo automático/manual
+         */
+        function toggleAutoStrategy() {
+            config.autoStrategy = document.getElementById('autoStrategyToggle').checked;
+            
+            const manualGroup = document.getElementById('manualStrategyGroup');
+            manualGroup.style.display = config.autoStrategy ? 'none' : 'block';
+            
+            if (config.autoStrategy) {
+                applyAutoStrategy();
+            }
+            
+            updateStrategyDisplay();
+        }
+
+        /**
+         * Atualiza display da estratégia atual
+         */
+        function updateStrategyDisplay() {
+            const currentStrategy = strategies[config.strategy];
+            const badge = document.getElementById('strategyBadge');
+            const explanation = document.getElementById('strategyExplanation');
+            
+            document.getElementById('currentStrategyName').textContent = 
+                currentStrategy.emoji + ' ' + currentStrategy.name;
+            document.getElementById('currentStrategyDesc').textContent = 
+                currentStrategy.description;
+            
+            if (config.autoStrategy) {
+                const recommendation = analyzeStrategyRecommendation();
+                badge.className = 'strategy-badge auto';
+                badge.textContent = '🤖 Estratégia Automática';
+                explanation.innerHTML = `<strong>Por que esta estratégia?</strong><br>${recommendation.reason}`;
+            } else {
+                badge.className = 'strategy-badge manual';
+                badge.textContent = '👤 Estratégia Manual';
+                explanation.innerHTML = `<strong>Modo Manual:</strong> Você está controlando a estratégia. O sistema sugere mudanças, mas não aplica automaticamente.`;
+            }
+        }
 
         // ============================================
         // FUNÇÕES DE ANÁLISE E CÁLCULO
@@ -703,6 +947,15 @@
         function generateAlerts(suggestions, analysis) {
             let alerts = [];
 
+            // Alert de estratégia automática mudada
+            const recommendation = analyzeStrategyRecommendation();
+            if (config.autoStrategy && recommendation.scenario !== 'inicial' && recommendation.scenario !== 'equilibrado') {
+                alerts.push({
+                    type: 'info',
+                    message: `🤖 ${recommendation.reason}`
+                });
+            }
+
             if (suggestions.dayType === 'high') {
                 const dayName = getDayOfWeek(getToday());
                 const dayLabel = MATCH_FREQUENCY.brasil[dayName].label;
@@ -859,6 +1112,9 @@
                 console.log(`[DERROTA] -R$ ${entry.stake.toFixed(2)} | Saldo: R$ ${config.availableBalance.toFixed(2)}`);
             }
             
+            // Aplicar estratégia automática após resultado
+            applyAutoStrategy();
+            
             saveData();
             updateUI();
             
@@ -915,6 +1171,9 @@
                 console.log(`[CASHOUT LOSS] -R$ ${loss.toFixed(2)} | Recuperado: R$ ${amount.toFixed(2)}`);
             }
             
+            // Aplicar estratégia automática após cashout
+            applyAutoStrategy();
+            
             closeCashoutModal();
             saveData();
             updateUI();
@@ -950,6 +1209,9 @@
             }
             
             bettingData[currentTab].entries.splice(index, 1);
+            
+            // Recalcular estratégia após deletar
+            applyAutoStrategy();
             
             saveData();
             updateUI();
@@ -1228,6 +1490,8 @@
         }
 
         function updateUI() {
+            applyAutoStrategy();
+            updateStrategyDisplay();
             renderAISuggestions();
             updateStats();
             renderTabs();
@@ -1240,7 +1504,11 @@
         function openConfigModal() {
             document.getElementById('bankrollInput').value = config.bankroll.toFixed(2);
             document.getElementById('winRateInput').value = config.estimatedWinRate;
+            document.getElementById('autoStrategyToggle').checked = config.autoStrategy;
             document.getElementById('strategySelect').value = config.strategy;
+            
+            document.getElementById('manualStrategyGroup').style.display = 
+                config.autoStrategy ? 'none' : 'block';
             
             const analysis = analyzePerformance();
             const hint = document.getElementById('winRateHintConfig');
@@ -1280,7 +1548,10 @@
             
             config.bankroll = newBankroll;
             config.estimatedWinRate = newWinRate;
-            config.strategy = newStrategy;
+            
+            if (!config.autoStrategy) {
+                config.strategy = newStrategy;
+            }
             
             if (!config.initialBankroll) {
                 config.initialBankroll = newBankroll;
@@ -1321,6 +1592,12 @@
                 }
                 
                 config = data.config;
+                
+                // Garantir que autoStrategy existe
+                if (config.autoStrategy === undefined) {
+                    config.autoStrategy = true;
+                }
+                
                 bettingData = data.bettingData;
                 
                 saveData();
@@ -1403,6 +1680,12 @@
                 
                 if (loadedConfig) {
                     config = loadedConfig;
+                    
+                    // Garantir que autoStrategy existe
+                    if (config.autoStrategy === undefined) {
+                        config.autoStrategy = true;
+                    }
+                    
                     console.log('[LOAD] Config carregada');
                 }
                 
@@ -1448,7 +1731,7 @@
                 config: config,
                 bettingData: bettingData,
                 exportDate: new Date().toISOString(),
-                version: '4.1-criteryon-fixed'
+                version: '5.0-criteryon-auto-strategy'
             };
             
             const dataStr = JSON.stringify(data, null, 2);
@@ -1485,7 +1768,7 @@
         }, 30000);
 
         window.onload = function() {
-            console.log('[INIT] Criteryon v4.1 - Backend Corrigido');
+            console.log('[INIT] Criteryon v5.0 - Estratégia Automática');
             loadData();
             
             window.addEventListener('beforeunload', () => {
