@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criteryon - Sistema de Gestão de Apostas</title>
+    <title>Criteryon v6.0</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -25,6 +25,7 @@
             gap: 15px;
         }
         h1 { color: #F5B342; font-size: 28px; }
+        h1 .version { font-size: 14px; color: #666; font-weight: normal; }
         .btn {
             padding: 10px 20px;
             background: #F5B342;
@@ -136,25 +137,8 @@
         .badge-win { background: rgba(0, 227, 150, 0.2); color: #00E396; }
         .badge-loss { background: rgba(255, 69, 96, 0.2); color: #FF4560; }
         .badge-cashout { background: rgba(245, 179, 66, 0.2); color: #F5B342; }
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-        }
-        .tab {
-            padding: 10px 20px;
-            background: #1A1A1A;
-            border: 1px solid #333;
-            border-radius: 8px;
-            cursor: pointer;
-            white-space: nowrap;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .tab:hover { background: #222; }
-        .tab.active { background: #F5B342; color: #0A0A0A; border-color: #F5B342; }
-        .tab.high-volume::after { content: ' 🔥'; }
+        .badge-deposit { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-adjustment { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
         .modal {
             display: none;
             position: fixed;
@@ -185,56 +169,6 @@
             margin-top: 20px;
             justify-content: flex-end;
         }
-        .suggestion-box {
-            background: rgba(245, 179, 66, 0.1);
-            border: 2px dashed rgba(245, 179, 66, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .suggestion-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #F5B342;
-            margin-bottom: 15px;
-        }
-        .suggestion-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        .suggestion-item { text-align: center; }
-        .suggestion-label {
-            font-size: 11px;
-            color: #999;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        .suggestion-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #F5B342;
-        }
-        .bar {
-            height: 8px;
-            background: #222;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        .bar-fill {
-            height: 100%;
-            transition: width 0.5s ease;
-        }
-        .bar-available { background: linear-gradient(90deg, #00E396, #00C48C); }
-        .bar-invested { background: linear-gradient(90deg, #FEB019, #D4941F); }
-        .bar-profit { background: linear-gradient(90deg, #00E396, #00C48C); }
-        .bar-loss { background: linear-gradient(90deg, #FF4560, #DC143C); }
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
         .save-status {
             display: inline-block;
             padding: 6px 16px;
@@ -247,1405 +181,727 @@
         .save-status.error {
             background: #ef4444;
         }
-        .strategy-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-        .strategy-badge.auto {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        .strategy-badge.manual {
-            background: linear-gradient(135deg, #7c3aed, #a855f7);
-            color: white;
-        }
-        .strategy-explanation {
+        .info-box {
             background: rgba(59, 130, 246, 0.1);
             border: 1px solid rgba(59, 130, 246, 0.3);
             border-radius: 8px;
-            padding: 12px;
-            margin-top: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
             font-size: 13px;
             color: #8bb8ff;
         }
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
         }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .toggle-slider {
-            position: absolute;
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #333;
-            transition: .4s;
-            border-radius: 24px;
         }
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+        .radio-option input[type="radio"] {
+            width: auto;
+            cursor: pointer;
         }
-        input:checked + .toggle-slider {
-            background-color: #10b981;
-        }
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
+        .action-buttons {
+            display: flex;
+            gap: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <div>
-                <h1>CRITERYON</h1>
-                <p style="color: #666; font-size: 14px;">Sistema de Gestão de Apostas Esportivas</p>
-                <span class="save-status" id="saveStatus">✅ Dados Salvos</span>
-                <span class="strategy-badge auto" id="strategyBadge">🤖 Estratégia Automática</span>
-            </div>
+            <h1>🎯 Criteryon <span class="version">v6.0 - FIXED</span></h1>
             <div class="header-actions">
-                <button class="btn btn-secondary" onclick="openConfigModal()">⚙️ Config</button>
-                <button class="btn btn-info" onclick="openImportModal()">📤 Importar</button>
-                <button class="btn btn-secondary" onclick="exportData()">📥 Exportar</button>
-                <button class="btn" onclick="manualSave()">💾 Salvar</button>
+                <span id="saveStatus" class="save-status">⏳ Carregando...</span>
+                <button class="btn btn-secondary" onclick="exportData()">📤 Exportar</button>
+                <button class="btn" onclick="openAddFundsModal()">💰 Gerenciar Carteira</button>
+                <button class="btn" onclick="openBetModal()">➕ Nova Aposta</button>
             </div>
         </div>
 
-        <!-- Strategy Explanation Card -->
-        <div class="section">
-            <div class="card">
-                <div class="card-title">🎯 Estratégia Atual</div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <div>
-                        <h3 style="color: #F5B342; font-size: 20px; margin-bottom: 5px;" id="currentStrategyName">Kelly Fracionário</h3>
-                        <p style="color: #999; font-size: 13px;" id="currentStrategyDesc">Descrição da estratégia</p>
-                    </div>
-                </div>
-                <div class="strategy-explanation" id="strategyExplanation">
-                    Analisando seu momento...
-                </div>
-            </div>
+        <!-- Alertas de melhorias -->
+        <div class="alert alert-success">
+            ✅ <strong>CORREÇÕES v6.0:</strong> Carteira inicia em R$ 0 | Diferenciação entre Depósito e Reajuste | Odds editáveis | Retorno ajustável
         </div>
 
-        <!-- Stats Grid -->
+        <!-- Dashboard de KPIs -->
         <div class="grid">
             <div class="card">
-                <div class="card-title">💰 Carteira Total</div>
-                <div class="card-value" id="totalBankroll">R$ 0,00</div>
-                <div class="card-subtitle" id="bankrollChange">-</div>
+                <div class="card-title">💰 Saldo Atual</div>
+                <div class="card-value" id="currentBankroll">R$ 0,00</div>
+                <div class="card-subtitle" id="bankrollChange">Sem movimentações</div>
             </div>
+            
             <div class="card">
-                <div class="card-title">💵 Saldo Disponível</div>
-                <div class="card-value" id="availableBalance">R$ 0,00</div>
-                <div class="card-subtitle" id="availablePercent">-</div>
+                <div class="card-title">📊 Lucro/Prejuízo Real</div>
+                <div class="card-value" id="profitDisplay">R$ 0,00</div>
+                <div class="card-subtitle" id="profitPercent">0%</div>
             </div>
+            
             <div class="card">
-                <div class="card-title">⏳ Valor Investido</div>
-                <div class="card-value warning" id="investedAmount">R$ 0,00</div>
-                <div class="card-subtitle" id="investedPercent">-</div>
+                <div class="card-title">📥 Total Depositado</div>
+                <div class="card-value" id="totalDeposited">R$ 0,00</div>
+                <div class="card-subtitle">Apenas depósitos reais</div>
             </div>
+            
             <div class="card">
-                <div class="card-title">📈 Lucro Total</div>
-                <div class="card-value success" id="totalProfit">R$ 0,00</div>
-                <div class="card-subtitle" id="profitCount">-</div>
-            </div>
-            <div class="card">
-                <div class="card-title">📉 Prejuízo Total</div>
-                <div class="card-value danger" id="totalLoss">R$ 0,00</div>
-                <div class="card-subtitle" id="lossCount">-</div>
-            </div>
-            <div class="card">
-                <div class="card-title">🎯 Win Rate Real</div>
-                <div class="card-value" id="actualWinRate">0%</div>
-                <div class="card-subtitle" id="winRateHint">-</div>
+                <div class="card-title">🎲 Apostas Ativas</div>
+                <div class="card-value" id="activeBets">0</div>
+                <div class="card-subtitle" id="activeBetsValue">R$ 0,00 investido</div>
             </div>
         </div>
 
-        <!-- Distribution Bars -->
+        <!-- Histórico de Apostas -->
         <div class="section">
-            <div class="section-title">📊 Distribuição da Carteira</div>
-            <div class="card">
-                <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 13px; color: #999;">Disponível</span>
-                        <span style="font-size: 13px; color: #999;" id="barAvailableLabel">R$ 0 (0%)</span>
-                    </div>
-                    <div class="bar"><div class="bar-fill bar-available" id="barAvailable" style="width: 0%"></div></div>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 13px; color: #999;">Investido</span>
-                        <span style="font-size: 13px; color: #999;" id="barInvestedLabel">R$ 0 (0%)</span>
-                    </div>
-                    <div class="bar"><div class="bar-fill bar-invested" id="barInvested" style="width: 0%"></div></div>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 13px; color: #999;">Lucro Acumulado</span>
-                        <span style="font-size: 13px; color: #999;" id="barProfitLabel">R$ 0</span>
-                    </div>
-                    <div class="bar"><div class="bar-fill bar-profit" id="barProfit" style="width: 0%"></div></div>
-                </div>
-                <div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 13px; color: #999;">Prejuízo Acumulado</span>
-                        <span style="font-size: 13px; color: #999;" id="barLossLabel">R$ 0</span>
-                    </div>
-                    <div class="bar"><div class="bar-fill bar-loss" id="barLoss" style="width: 0%"></div></div>
-                </div>
-            </div>
+            <div class="section-title">📋 Histórico de Apostas</div>
+            <table id="betsTable">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Evento</th>
+                        <th>Odd</th>
+                        <th>Valor</th>
+                        <th>Retorno</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="betsBody"></tbody>
+            </table>
         </div>
 
-        <!-- AI Suggestions -->
+        <!-- Histórico de Transações -->
         <div class="section">
-            <div class="section-title">🤖 Análise Inteligente & Sugestões</div>
-            <div class="grid">
-                <div class="card">
-                    <div class="card-title">💵 Stake Recomendado</div>
-                    <div class="card-value" id="suggestedStake">R$ 0,00</div>
-                    <div class="card-subtitle" id="stakePercent">-</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">🎯 Odd Ideal</div>
-                    <div class="card-value" id="idealOdd">0.00</div>
-                    <div class="card-subtitle" id="oddRange">-</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">📊 Apostas Recomendadas Hoje</div>
-                    <div class="card-value" id="maxBetsToday">0</div>
-                    <div class="card-subtitle" id="dayType">-</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">🎲 Confiança</div>
-                    <div class="card-value" id="confidenceLevel">-</div>
-                    <div class="card-subtitle" id="strategyInfo">-</div>
-                </div>
-            </div>
-            <div id="aiAlerts"></div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="section">
-            <div class="section-title">📅 Apostas por Dia</div>
-            <div class="tabs" id="tabButtons"></div>
-            <div class="card" id="tabContent"></div>
+            <div class="section-title">💳 Histórico de Transações</div>
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsBody"></tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Config Modal -->
-    <div class="modal" id="configModal">
+    <!-- Modal: Adicionar Fundos -->
+    <div id="addFundsModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">⚙️ Configurações</div>
+            <h2 class="modal-title">💰 Gerenciar Carteira</h2>
+            
+            <div class="info-box">
+                <strong>📌 Importante:</strong><br>
+                • <strong>Depósito:</strong> Dinheiro novo que você está adicionando (conta como investimento)<br>
+                • <strong>Reajuste:</strong> Equalização da carteira (não afeta lucro/prejuízo)
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Operação</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="fundType" value="deposit" checked>
+                        <span>💵 Depósito (Dinheiro Novo)</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="fundType" value="adjustment">
+                        <span>⚖️ Reajuste (Equalizar)</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="fundType" value="withdrawal">
+                        <span>💸 Saque</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="fundAmount" step="0.01" min="0.01" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>Descrição (opcional)</label>
+                <input type="text" id="fundDescription" placeholder="Ex: Depósito PIX, Saque, etc.">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeAddFundsModal()">Cancelar</button>
+                <button class="btn" onclick="addFunds()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Nova Aposta -->
+    <div id="betModal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="betModalTitle">➕ Nova Aposta</h2>
+
+            <div class="form-group">
+                <label>Evento / Descrição</label>
+                <input type="text" id="betEvent" placeholder="Ex: Flamengo vs Palmeiras">
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
-                    <label>Carteira Total (R$)</label>
-                    <input type="number" id="bankrollInput" step="0.01" min="1">
+                    <label>Odd</label>
+                    <input type="number" id="betOdd" step="0.01" min="1.01" placeholder="2.50">
                 </div>
                 <div class="form-group">
-                    <label>Win Rate Estimado (%)</label>
-                    <input type="number" id="winRateInput" step="1" min="30" max="80">
-                    <small id="winRateHintConfig" style="color: #666; font-size: 11px;"></small>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <span>Estratégia Automática</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="autoStrategyToggle" checked onchange="toggleAutoStrategy()">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </label>
-                <div class="alert alert-info" style="font-size: 12px; margin-bottom: 15px;">
-                    ℹ️ <strong>Modo Automático:</strong> O sistema analisa sua performance e escolhe a melhor estratégia para cada momento.
+                    <label>Valor Apostado (R$)</label>
+                    <input type="number" id="betAmount" step="0.01" min="0.01" placeholder="10.00">
                 </div>
             </div>
 
-            <div class="form-group" id="manualStrategyGroup" style="display: none;">
-                <label>Estratégia Manual</label>
-                <select id="strategySelect">
-                    <option value="kelly">Kelly Criterion (Agressivo)</option>
-                    <option value="kelly_fractional">Kelly Fracionário (Equilibrado)</option>
-                    <option value="fibonacci">Fibonacci Recovery (Recuperação)</option>
-                    <option value="percentage">Percentage Staking (Conservador)</option>
-                </select>
+            <div class="form-group">
+                <label>Retorno Esperado (R$)</label>
+                <input type="number" id="betReturn" step="0.01" min="0" placeholder="25.00" readonly>
+                <div class="info-box" style="margin-top: 10px;">
+                    💡 O retorno é calculado automaticamente (Valor × Odd). Você pode editá-lo manualmente se a casa der bônus.
+                </div>
             </div>
-            
+
+            <div class="form-group">
+                <label>Data da Aposta</label>
+                <input type="date" id="betDate">
+            </div>
+
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeConfigModal()">Cancelar</button>
-                <button class="btn" onclick="updateConfig()">Salvar</button>
+                <button class="btn btn-secondary" onclick="closeBetModal()">Cancelar</button>
+                <button class="btn" onclick="saveBet()" id="saveBetBtn">Adicionar Aposta</button>
             </div>
         </div>
     </div>
 
-    <!-- Cashout Modal -->
-    <div class="modal" id="cashoutModal">
+    <!-- Modal: Editar Odd -->
+    <div id="editOddModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">💰 Cashout</div>
-            <div class="form-group">
-                <label>Resultado</label>
-                <select id="cashoutResult">
-                    <option value="win">✅ Ganhou</option>
-                    <option value="loss">❌ Perdeu</option>
-                </select>
+            <h2 class="modal-title">✏️ Editar Odd</h2>
+
+            <div class="info-box">
+                <strong>📌 Quando editar a odd:</strong><br>
+                • Item da aposta foi anulado<br>
+                • Jogador não foi relacionado<br>
+                • Mudança nas condições da aposta
             </div>
+
             <div class="form-group">
-                <label>Valor Recebido (R$)</label>
-                <input type="number" id="cashoutAmount" step="0.01" min="0">
+                <label>Nova Odd</label>
+                <input type="number" id="editOddValue" step="0.01" min="1.00" placeholder="2.50">
             </div>
+
+            <div class="form-group">
+                <label>Motivo da Alteração</label>
+                <input type="text" id="editOddReason" placeholder="Ex: Jogador não relacionado">
+            </div>
+
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeCashoutModal()">Cancelar</button>
-                <button class="btn" onclick="confirmCashout()">Confirmar</button>
+                <button class="btn btn-secondary" onclick="closeEditOddModal()">Cancelar</button>
+                <button class="btn" onclick="saveOddEdit()">Salvar Alteração</button>
             </div>
         </div>
     </div>
 
-    <!-- Import Modal -->
-    <div class="modal" id="importModal">
+    <!-- Modal: Ajustar Retorno -->
+    <div id="adjustReturnModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">📤 Importar Backup</div>
-            <div class="form-group">
-                <label>Cole o JSON do backup:</label>
-                <textarea id="importData" rows="10" style="width: 100%; background: #0A0A0A; border: 1px solid #333; border-radius: 8px; padding: 12px; color: #FFF; font-family: monospace;" placeholder='{"config": {...}, "bettingData": {...}}'></textarea>
+            <h2 class="modal-title">💰 Ajustar Retorno</h2>
+
+            <div class="info-box">
+                <strong>📌 Quando ajustar o retorno:</strong><br>
+                • Casa de apostas deu bônus por múltiplas<br>
+                • Promoção especial aplicada<br>
+                • Diferença entre retorno calculado e real
             </div>
+
+            <div class="form-group">
+                <label>Retorno Original</label>
+                <input type="text" id="originalReturn" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Novo Retorno (R$)</label>
+                <input type="number" id="adjustedReturn" step="0.01" min="0" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>Motivo do Ajuste</label>
+                <input type="text" id="adjustReturnReason" placeholder="Ex: Bônus de 10% por 3+ seleções">
+            </div>
+
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeImportModal()">Cancelar</button>
-                <button class="btn" onclick="importData()">Importar</button>
+                <button class="btn btn-secondary" onclick="closeAdjustReturnModal()">Cancelar</button>
+                <button class="btn" onclick="saveReturnAdjustment()">Salvar Ajuste</button>
             </div>
         </div>
     </div>
 
     <script>
         // ============================================
-        // BACKEND - LÓGICA PRINCIPAL
+        // ESTADO DA APLICAÇÃO
         // ============================================
-
-        const MATCH_FREQUENCY = {
-            brasil: {
-                segunda: { min: 3, max: 5, label: 'Segunda' },
-                terca: { min: 2, max: 3, label: 'Terça' },
-                quarta: { min: 15, max: 20, label: 'Quarta' },
-                quinta: { min: 15, max: 20, label: 'Quinta' },
-                sexta: { min: 2, max: 5, label: 'Sexta' },
-                sabado: { min: 30, max: 35, label: 'Sábado' },
-                domingo: { min: 25, max: 30, label: 'Domingo' }
-            }
-        };
 
         let config = {
-            bankroll: 20,
-            initialBankroll: 20,
-            availableBalance: 20,
-            strategy: 'kelly_fractional',
-            estimatedWinRate: 55,
-            fibonacciIndex: 0,
-            lastSave: null,
-            autoStrategy: true  // NOVO: modo automático ativado por padrão
+            currentBankroll: 0,
+            totalDeposits: 0,
+            totalWithdrawals: 0,
+            totalAdjustments: 0,
+            lastSave: null
         };
 
-        const strategies = {
-            kelly: {
-                name: 'Kelly Criterion',
-                description: 'Agressivo - Maximiza crescimento no longo prazo',
-                emoji: '🚀',
-                risk: 'high',
-                calculate: (bankroll, odd, winRate) => {
-                    const p = winRate / 100;
-                    const q = 1 - p;
-                    const b = odd - 1;
-                    const kelly = (p * b - q) / b;
-                    return Math.max(0, Math.min(0.25, kelly)) * bankroll;
-                }
-            },
-            kelly_fractional: {
-                name: 'Kelly Fracionário',
-                description: 'Equilibrado - 25% do Kelly, menor volatilidade',
-                emoji: '⚖️',
-                risk: 'medium',
-                calculate: (bankroll, odd, winRate) => {
-                    const fullKelly = strategies.kelly.calculate(bankroll, odd, winRate);
-                    return fullKelly * 0.25;
-                }
-            },
-            fibonacci: {
-                name: 'Fibonacci Recovery',
-                description: 'Recuperação - Progressão após perdas',
-                emoji: '🔄',
-                risk: 'medium',
-                calculate: (bankroll, odd, winRate, fibIndex) => {
-                    const sequence = [1, 1, 2, 3, 5, 8, 13, 21];
-                    const baseUnit = bankroll * 0.02;
-                    return baseUnit * (sequence[fibIndex] || 1);
-                }
-            },
-            percentage: {
-                name: 'Percentage Staking',
-                description: 'Conservador - Percentual fixo da banca',
-                emoji: '🛡️',
-                risk: 'low',
-                calculate: (bankroll, odd, winRate) => {
-                    const percent = winRate >= 60 ? 0.05 : winRate >= 55 ? 0.04 : 0.03;
-                    return bankroll * percent;
-                }
-            }
+        let bettingData = {
+            bets: [],
+            transactions: []
         };
 
-        let bettingData = {};
-        let currentTab = null;
-        let currentCashoutBetIndex = null;
+        let editingBetId = null;
+        let editingOddBetId = null;
+        let adjustingReturnBetId = null;
 
         // ============================================
-        // SISTEMA DE ESTRATÉGIA AUTOMÁTICA
+        // FUNÇÕES DE GERENCIAMENTO DE CARTEIRA
         // ============================================
 
-        /**
-         * Analisa a situação atual e recomenda a melhor estratégia
-         */
-        function analyzeStrategyRecommendation() {
-            const analysis = analyzePerformance();
-            const financials = calculateFinancials();
-            
-            // Sem histórico suficiente: equilibrado
-            if (!analysis || analysis.totalBets < 5) {
-                return {
-                    strategy: 'kelly_fractional',
-                    reason: 'Iniciando com estratégia equilibrada. Faça mais apostas para análise detalhada.',
-                    scenario: 'inicial'
-                };
+        function openAddFundsModal() {
+            document.getElementById('addFundsModal').classList.add('active');
+            document.getElementById('fundAmount').value = '';
+            document.getElementById('fundDescription').value = '';
+            document.querySelector('input[name="fundType"][value="deposit"]').checked = true;
+        }
+
+        function closeAddFundsModal() {
+            document.getElementById('addFundsModal').classList.remove('active');
+        }
+
+        function addFunds() {
+            const amount = parseFloat(document.getElementById('fundAmount').value);
+            const description = document.getElementById('fundDescription').value;
+            const fundType = document.querySelector('input[name="fundType"]:checked').value;
+
+            if (!amount || amount <= 0) {
+                alert('❌ Insira um valor válido!');
+                return;
             }
 
-            const profitPercent = ((config.bankroll - config.initialBankroll) / config.initialBankroll) * 100;
-            const bankrollPercent = (config.bankroll / config.initialBankroll) * 100;
-            const winRate = analysis.actualWinRate;
-            const streak = analysis.currentStreak;
-            const streakType = analysis.streakType;
-
-            // CENÁRIO CRÍTICO: Proteger a banca
-            if (bankrollPercent < 70 || winRate < 35 || (streakType === 'loss' && streak >= 4)) {
-                return {
-                    strategy: 'percentage',
-                    reason: `🛡️ MODO PROTEÇÃO ATIVADO: ${
-                        bankrollPercent < 70 ? `Banca em ${bankrollPercent.toFixed(0)}% do inicial. ` : ''
-                    }${
-                        winRate < 35 ? `Win rate muito baixo (${winRate.toFixed(0)}%). ` : ''
-                    }${
-                        streakType === 'loss' && streak >= 4 ? `${streak} derrotas seguidas. ` : ''
-                    }Stakes conservadores para preservar capital.`,
-                    scenario: 'critico'
-                };
-            }
-
-            // CENÁRIO DE RECUPERAÇÃO: Fibonacci
-            if (streakType === 'loss' && streak >= 2 && profitPercent < 0) {
-                return {
-                    strategy: 'fibonacci',
-                    reason: `🔄 MODO RECUPERAÇÃO: ${streak} derrota(s) seguida(s) e prejuízo de ${Math.abs(profitPercent).toFixed(1)}%. Sistema Fibonacci vai recuperar gradualmente.`,
-                    scenario: 'recuperacao'
-                };
-            }
-
-            // CENÁRIO EXCELENTE: Kelly Full (agressivo)
-            if (winRate >= 60 && profitPercent >= 20 && streakType === 'win' && streak >= 3) {
-                return {
-                    strategy: 'kelly',
-                    reason: `🚀 MOMENTO EXCEPCIONAL: Win rate de ${winRate.toFixed(0)}%, lucro de ${profitPercent.toFixed(1)}% e ${streak} vitórias seguidas. Maximizando crescimento!`,
-                    scenario: 'excelente'
-                };
-            }
-
-            // CENÁRIO BOM: Kelly Full moderado
-            if (winRate >= 55 && profitPercent >= 10 && bankrollPercent >= 110) {
-                return {
-                    strategy: 'kelly',
-                    reason: `🚀 MOMENTO POSITIVO: Win rate ${winRate.toFixed(0)}% e lucro de ${profitPercent.toFixed(1)}%. Aproveitando momento com Kelly.`,
-                    scenario: 'bom'
-                };
-            }
-
-            // CENÁRIO PROTEGER LUCRO: Kelly Fracionário
-            if (profitPercent >= 50) {
-                return {
-                    strategy: 'kelly_fractional',
-                    reason: `⚖️ PROTEGENDO LUCRO: Você já tem ${profitPercent.toFixed(1)}% de lucro! Kelly Fracionário mantém crescimento sem arriscar muito.`,
-                    scenario: 'proteção_lucro'
-                };
-            }
-
-            // PADRÃO: Kelly Fracionário (equilibrado)
-            return {
-                strategy: 'kelly_fractional',
-                reason: `⚖️ MODO EQUILIBRADO: Win rate ${winRate.toFixed(0)}%, ${profitPercent >= 0 ? 'lucro' : 'prejuízo'} de ${Math.abs(profitPercent).toFixed(1)}%. Kelly Fracionário oferece bom equilíbrio risco/retorno.`,
-                scenario: 'equilibrado'
+            const transaction = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                type: fundType,
+                amount: amount,
+                description: description || (fundType === 'deposit' ? 'Depósito' : fundType === 'withdrawal' ? 'Saque' : 'Reajuste')
             };
-        }
 
-        /**
-         * Aplica estratégia automática se habilitado
-         */
-        function applyAutoStrategy() {
-            if (!config.autoStrategy) return;
-            
-            const recommendation = analyzeStrategyRecommendation();
-            
-            // Só muda se for diferente da atual
-            if (config.strategy !== recommendation.strategy) {
-                console.log(`[AUTO STRATEGY] Mudando de ${config.strategy} para ${recommendation.strategy}`);
-                config.strategy = recommendation.strategy;
-                saveData();
+            if (fundType === 'deposit') {
+                config.currentBankroll += amount;
+                config.totalDeposits += amount;
+                alert(`✅ Depósito de R$ ${amount.toFixed(2)} realizado com sucesso!`);
+            } else if (fundType === 'withdrawal') {
+                if (amount > config.currentBankroll) {
+                    alert('❌ Saldo insuficiente para saque!');
+                    return;
+                }
+                config.currentBankroll -= amount;
+                config.totalWithdrawals += amount;
+                alert(`✅ Saque de R$ ${amount.toFixed(2)} realizado com sucesso!`);
+            } else if (fundType === 'adjustment') {
+                config.currentBankroll += amount;
+                config.totalAdjustments += amount;
+                alert(`✅ Reajuste de R$ ${amount.toFixed(2)} realizado com sucesso!`);
             }
-        }
 
-        /**
-         * Alterna modo automático/manual
-         */
-        function toggleAutoStrategy() {
-            config.autoStrategy = document.getElementById('autoStrategyToggle').checked;
+            bettingData.transactions.unshift(transaction);
             
-            const manualGroup = document.getElementById('manualStrategyGroup');
-            manualGroup.style.display = config.autoStrategy ? 'none' : 'block';
-            
-            if (config.autoStrategy) {
-                applyAutoStrategy();
-            }
-            
-            updateStrategyDisplay();
-        }
-
-        /**
-         * Atualiza display da estratégia atual
-         */
-        function updateStrategyDisplay() {
-            const currentStrategy = strategies[config.strategy];
-            const badge = document.getElementById('strategyBadge');
-            const explanation = document.getElementById('strategyExplanation');
-            
-            document.getElementById('currentStrategyName').textContent = 
-                currentStrategy.emoji + ' ' + currentStrategy.name;
-            document.getElementById('currentStrategyDesc').textContent = 
-                currentStrategy.description;
-            
-            if (config.autoStrategy) {
-                const recommendation = analyzeStrategyRecommendation();
-                badge.className = 'strategy-badge auto';
-                badge.textContent = '🤖 Estratégia Automática';
-                explanation.innerHTML = `<strong>Por que esta estratégia?</strong><br>${recommendation.reason}`;
-            } else {
-                badge.className = 'strategy-badge manual';
-                badge.textContent = '👤 Estratégia Manual';
-                explanation.innerHTML = `<strong>Modo Manual:</strong> Você está controlando a estratégia. O sistema sugere mudanças, mas não aplica automaticamente.`;
-            }
+            closeAddFundsModal();
+            saveData();
+            updateUI();
         }
 
         // ============================================
-        // FUNÇÕES DE ANÁLISE E CÁLCULO
+        // FUNÇÕES DE GERENCIAMENTO DE APOSTAS
         // ============================================
 
-        function getDayOfWeek(dateStr) {
-            const days = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-            const date = new Date(dateStr + 'T12:00:00');
-            return days[date.getDay()];
-        }
-
-        function getMaxBetsForDay(dateStr) {
-            const dayName = getDayOfWeek(dateStr);
-            const freq = MATCH_FREQUENCY.brasil[dayName];
+        function openBetModal() {
+            editingBetId = null;
+            document.getElementById('betModalTitle').textContent = '➕ Nova Aposta';
+            document.getElementById('betEvent').value = '';
+            document.getElementById('betOdd').value = '';
+            document.getElementById('betAmount').value = '';
+            document.getElementById('betReturn').value = '';
+            document.getElementById('betDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('saveBetBtn').textContent = 'Adicionar Aposta';
             
-            if (freq.min >= 15) return 5;
-            if (freq.min >= 10) return 3;
-            return 2;
-        }
-
-        function isHighVolumeDay(dateStr) {
-            const dayName = getDayOfWeek(dateStr);
-            return MATCH_FREQUENCY.brasil[dayName].min >= 15;
-        }
-
-        function calculateFinancials() {
-            let invested = 0;
-            let totalProfit = 0;
-            let totalLoss = 0;
-            let profitCount = 0;
-            let lossCount = 0;
-
-            Object.values(bettingData).forEach(day => {
-                day.entries.forEach(entry => {
-                    if (entry.result === 'pending') {
-                        invested += entry.stake;
-                    } else if (entry.result === 'win') {
-                        const profit = entry.potentialReturn - entry.stake;
-                        totalProfit += profit;
-                        profitCount++;
-                    } else if (entry.result === 'loss') {
-                        totalLoss += entry.stake;
-                        lossCount++;
-                    } else if (entry.result === 'cashout-win') {
-                        const profit = entry.cashoutAmount - entry.stake;
-                        totalProfit += profit;
-                        profitCount++;
-                    } else if (entry.result === 'cashout-loss') {
-                        const loss = entry.stake - entry.cashoutAmount;
-                        totalLoss += loss;
-                        lossCount++;
-                    }
-                });
-            });
-
-            return {
-                invested,
-                totalProfit,
-                totalLoss,
-                profitCount,
-                lossCount,
-                netProfit: totalProfit - totalLoss
-            };
-        }
-
-        function analyzePerformance() {
-            let allEntries = [];
+            // Permitir edição manual do retorno
+            document.getElementById('betReturn').removeAttribute('readonly');
             
-            Object.values(bettingData).forEach(day => {
-                allEntries = allEntries.concat(day.entries.filter(e => e.result !== 'pending'));
-            });
+            document.getElementById('betModal').classList.add('active');
+        }
 
-            if (allEntries.length === 0) return null;
+        function closeBetModal() {
+            document.getElementById('betModal').classList.remove('active');
+        }
 
-            const wins = allEntries.filter(e => 
-                e.result === 'win' || e.result === 'cashout-win'
-            ).length;
-            const losses = allEntries.filter(e => 
-                e.result === 'loss' || e.result === 'cashout-loss'
-            ).length;
-            
-            const actualWinRate = (wins / allEntries.length) * 100;
+        // Calcular retorno automaticamente ao mudar odd ou valor
+        document.addEventListener('DOMContentLoaded', function() {
+            const oddInput = document.getElementById('betOdd');
+            const amountInput = document.getElementById('betAmount');
+            const returnInput = document.getElementById('betReturn');
 
-            let currentStreak = 0;
-            let streakType = null;
-            for (let i = allEntries.length - 1; i >= 0; i--) {
-                const result = allEntries[i].result;
-                const isWin = result === 'win' || result === 'cashout-win';
-                const isLoss = result === 'loss' || result === 'cashout-loss';
+            function calculateReturn() {
+                const odd = parseFloat(oddInput.value) || 0;
+                const amount = parseFloat(amountInput.value) || 0;
                 
-                if (!streakType) {
-                    streakType = isWin ? 'win' : 'loss';
-                    currentStreak = 1;
-                } else if ((streakType === 'win' && isWin) || (streakType === 'loss' && isLoss)) {
-                    currentStreak++;
-                } else {
-                    break;
+                if (odd > 0 && amount > 0) {
+                    returnInput.value = (odd * amount).toFixed(2);
                 }
             }
 
-            const last10 = allEntries.slice(-10);
-            const last10Wins = last10.filter(e => 
-                e.result === 'win' || e.result === 'cashout-win'
-            ).length;
-            const last10WinRate = last10.length > 0 ? (last10Wins / last10.length) * 100 : 0;
-
-            return {
-                totalBets: allEntries.length,
-                wins,
-                losses,
-                actualWinRate,
-                currentStreak,
-                streakType,
-                last10WinRate
-            };
-        }
-
-        function generateAISuggestions() {
-            const analysis = analyzePerformance();
-            const strategy = strategies[config.strategy];
-            const today = getToday();
-            
-            let useWinRate = config.estimatedWinRate;
-            if (analysis && analysis.totalBets >= 20) {
-                useWinRate = analysis.actualWinRate;
-            } else if (analysis && analysis.totalBets >= 10) {
-                useWinRate = (config.estimatedWinRate * 0.6) + (analysis.actualWinRate * 0.4);
+            if (oddInput && amountInput) {
+                oddInput.addEventListener('input', calculateReturn);
+                amountInput.addEventListener('input', calculateReturn);
             }
+        });
 
-            const p = useWinRate / 100;
-            const minOdd = 1 / p;
-            const idealOdd = minOdd * 1.15;
-            const maxOdd = minOdd * 1.35;
+        function saveBet() {
+            const event = document.getElementById('betEvent').value.trim();
+            const odd = parseFloat(document.getElementById('betOdd').value);
+            const amount = parseFloat(document.getElementById('betAmount').value);
+            let returnValue = parseFloat(document.getElementById('betReturn').value);
+            const date = document.getElementById('betDate').value;
 
-            let maxBetsToday = getMaxBetsForDay(today);
-
-            let suggestions = {
-                stake: null,
-                minOdd: minOdd.toFixed(2),
-                idealOdd: idealOdd.toFixed(2),
-                maxOdd: maxOdd.toFixed(2),
-                maxBetsToday: maxBetsToday,
-                confidence: 'medium',
-                dayType: isHighVolumeDay(today) ? 'high' : 'low',
-                useWinRate: useWinRate
-            };
-
-            const testOdd = parseFloat(idealOdd);
-            suggestions.stake = strategy.calculate(
-                config.availableBalance,
-                testOdd,
-                useWinRate,
-                config.fibonacciIndex
-            );
-
-            if (analysis) {
-                if (analysis.actualWinRate < config.estimatedWinRate - 5) {
-                    suggestions.stake *= 0.7;
-                    suggestions.confidence = 'low';
-                    suggestions.maxBetsToday = Math.max(1, Math.floor(suggestions.maxBetsToday * 0.6));
-                }
-
-                if (analysis.streakType === 'loss' && analysis.currentStreak >= 2) {
-                    if (config.strategy === 'fibonacci') {
-                        config.fibonacciIndex = Math.min(config.fibonacciIndex + 1, 7);
-                    } else {
-                        suggestions.stake *= 0.6;
-                        suggestions.maxBetsToday = Math.max(1, Math.floor(suggestions.maxBetsToday * 0.5));
-                    }
-                }
-
-                if (analysis.streakType === 'win' && analysis.currentStreak >= 3) {
-                    suggestions.stake *= 1.1;
-                    suggestions.confidence = 'high';
-                    config.fibonacciIndex = 0;
-                }
-
-                if (analysis.last10WinRate < 40 && analysis.totalBets >= 10) {
-                    suggestions.maxBetsToday = 0;
-                    suggestions.confidence = 'danger';
-                }
-            }
-
-            suggestions.stake = Math.min(suggestions.stake, config.availableBalance * 0.10);
-            suggestions.stake = Math.min(suggestions.stake, config.availableBalance);
-
-            return suggestions;
-        }
-
-        function generateAlerts(suggestions, analysis) {
-            let alerts = [];
-
-            // Alert de estratégia automática mudada
-            const recommendation = analyzeStrategyRecommendation();
-            if (config.autoStrategy && recommendation.scenario !== 'inicial' && recommendation.scenario !== 'equilibrado') {
-                alerts.push({
-                    type: 'info',
-                    message: `🤖 ${recommendation.reason}`
-                });
-            }
-
-            if (suggestions.dayType === 'high') {
-                const dayName = getDayOfWeek(getToday());
-                const dayLabel = MATCH_FREQUENCY.brasil[dayName].label;
-                alerts.push({
-                    type: 'success',
-                    message: `🔥 Hoje é ${dayLabel} - Dia de ALTO volume de jogos! Mais oportunidades (até ${suggestions.maxBetsToday} apostas).`
-                });
-            }
-
-            if (analysis && analysis.totalBets >= 20) {
-                alerts.push({
-                    type: 'success',
-                    message: `✅ Sistema usando win rate REAL (${analysis.actualWinRate.toFixed(1)}%) ao invés da estimativa (${config.estimatedWinRate}%). Cálculos mais precisos!`
-                });
-            } else if (analysis && analysis.totalBets >= 10) {
-                alerts.push({
-                    type: 'warning',
-                    message: `🔄 Transição ativa: ${analysis.totalBets}/20 apostas. Sistema mesclando win rate estimado com real.`
-                });
-            }
-
-            if (analysis && analysis.streakType === 'loss' && analysis.currentStreak >= 3) {
-                alerts.push({
-                    type: 'danger',
-                    message: `⚠️ ${analysis.currentStreak} derrotas consecutivas! ${config.strategy === 'fibonacci' ? 'Sistema Fibonacci ativado para recuperação.' : 'Stakes reduzidos automaticamente. Seja mais seletivo!'}`
-                });
-            }
-
-            if (analysis && analysis.last10WinRate < 40 && analysis.totalBets >= 10) {
-                alerts.push({
-                    type: 'danger',
-                    message: `🛑 ATENÇÃO CRÍTICA! Últimas 10 apostas: ${analysis.last10WinRate.toFixed(0)}% de acerto. Revise sua estratégia de seleção antes de continuar!`
-                });
-            }
-
-            const financials = calculateFinancials();
-            if (financials.invested > config.availableBalance * 0.5) {
-                alerts.push({
-                    type: 'warning',
-                    message: `⏳ Você tem R$ ${financials.invested.toFixed(2)} investido (${((financials.invested/config.bankroll)*100).toFixed(0)}% da carteira). Aguarde resultados das apostas pendentes.`
-                });
-            }
-
-            if (config.bankroll < config.initialBankroll * 0.5) {
-                alerts.push({
-                    type: 'danger',
-                    message: `💔 Banca caiu 50% do valor inicial. Considere parar e reavaliar sua estratégia.`
-                });
-            }
-
-            return alerts;
-        }
-
-        // ============================================
-        // FUNÇÕES DE MANIPULAÇÃO DE APOSTAS
-        // ============================================
-
-        function addEntry() {
-            const desc = document.getElementById('entryDesc').value.trim();
-            const odd = parseFloat(document.getElementById('entryOdd').value);
-            const stake = parseFloat(document.getElementById('entryStake').value);
-            const suggestions = generateAISuggestions();
-            
-            if (!desc || !odd || !stake) {
-                alert('⚠️ Preencha todos os campos!');
-                return;
-            }
-
-            if (isNaN(odd) || isNaN(stake)) {
-                alert('⚠️ Odd e valor devem ser números válidos!');
-                return;
-            }
-
-            if (stake > config.availableBalance) {
-                alert(`❌ Saldo insuficiente! Disponível: R$ ${config.availableBalance.toFixed(2)}`);
-                return;
-            }
-
-            if (stake <= 0) {
-                alert('⚠️ O valor da aposta deve ser maior que zero!');
+            if (!event || !odd || !amount || !returnValue || !date) {
+                alert('❌ Preencha todos os campos obrigatórios!');
                 return;
             }
 
             if (odd < 1.01) {
-                alert('⚠️ A odd deve ser maior que 1.01!');
+                alert('❌ Odd deve ser maior que 1.00!');
                 return;
             }
-            
-            if (odd < parseFloat(suggestions.minOdd)) {
-                if (!confirm(`⚠️ Odd ${odd.toFixed(2)} está abaixo do mínimo recomendado (${suggestions.minOdd}).\n\nEssa odd não oferece valor matemático suficiente para seu win rate.\n\nContinuar mesmo assim?`)) {
-                    return;
-                }
+
+            if (amount > config.currentBankroll) {
+                alert('❌ Saldo insuficiente para esta aposta!');
+                return;
             }
-            
-            if (odd > parseFloat(suggestions.maxOdd)) {
-                if (!confirm(`⚠️ Odd ${odd.toFixed(2)} está acima do máximo recomendado (${suggestions.maxOdd}).\n\nOdds muito altas têm menor probabilidade de sucesso.\n\nContinuar mesmo assim?`)) {
-                    return;
-                }
-            }
-            
-            const entry = {
-                description: desc,
+
+            const bet = {
+                id: editingBetId || Date.now(),
+                date: date,
+                event: event,
                 odd: odd,
-                stake: stake,
-                potentialReturn: stake * odd,
-                result: 'pending',
-                timestamp: new Date().toISOString(),
-                strategy: config.strategy,
-                suggestedStake: suggestions.stake,
-                useWinRate: suggestions.useWinRate
+                amount: amount,
+                return: returnValue,
+                status: 'pending',
+                result: null,
+                originalOdd: odd,
+                oddHistory: []
             };
-            
-            config.availableBalance -= stake;
-            
-            bettingData[currentTab].entries.push(entry);
-            
-            saveData();
-            renderTabContent(currentTab);
-            updateUI();
-            
-            document.getElementById('entryDesc').value = '';
-            document.getElementById('entryOdd').value = '';
-            
-            console.log(`[APOSTA ADICIONADA] Stake: R$ ${stake.toFixed(2)} | Saldo: R$ ${config.availableBalance.toFixed(2)}`);
-        }
 
-        function markResult(index, result) {
-            const entry = bettingData[currentTab].entries[index];
-            
-            if (entry.result !== 'pending') {
-                alert('⚠️ Esta aposta já foi finalizada!');
-                return;
-            }
-            
-            entry.result = result;
-            entry.settledAt = new Date().toISOString();
-            
-            if (result === 'win') {
-                config.availableBalance += entry.potentialReturn;
-                config.bankroll += (entry.potentialReturn - entry.stake);
-                
-                if (config.strategy === 'fibonacci') {
-                    config.fibonacciIndex = Math.max(0, config.fibonacciIndex - 1);
-                }
-                
-                console.log(`[VITÓRIA] +R$ ${(entry.potentialReturn - entry.stake).toFixed(2)} | Saldo: R$ ${config.availableBalance.toFixed(2)}`);
+            if (editingBetId) {
+                const index = bettingData.bets.findIndex(b => b.id === editingBetId);
+                bettingData.bets[index] = bet;
+                alert('✅ Aposta atualizada com sucesso!');
             } else {
-                config.bankroll -= entry.stake;
-                
-                if (config.strategy === 'fibonacci') {
-                    config.fibonacciIndex = Math.min(config.fibonacciIndex + 1, 7);
-                }
-                
-                console.log(`[DERROTA] -R$ ${entry.stake.toFixed(2)} | Saldo: R$ ${config.availableBalance.toFixed(2)}`);
+                config.currentBankroll -= amount;
+                bettingData.bets.unshift(bet);
+                alert('✅ Aposta registrada com sucesso!');
             }
-            
-            // Aplicar estratégia automática após resultado
-            applyAutoStrategy();
-            
-            saveData();
-            updateUI();
-            
-            const message = result === 'win' ?
-                `🎉 VITÓRIA!\n\nLucro: +R$ ${(entry.potentialReturn - entry.stake).toFixed(2)}\nSaldo disponível: R$ ${config.availableBalance.toFixed(2)}` :
-                `❌ DERROTA!\n\nPrejuízo: -R$ ${entry.stake.toFixed(2)}\nSaldo disponível: R$ ${config.availableBalance.toFixed(2)}`;
-            
-            alert(message);
-        }
 
-        function openCashoutModal(index) {
-            currentCashoutBetIndex = index;
-            const entry = bettingData[currentTab].entries[index];
-            
-            document.getElementById('cashoutAmount').value = entry.stake.toFixed(2);
-            document.getElementById('cashoutModal').classList.add('active');
-        }
-
-        function closeCashoutModal() {
-            currentCashoutBetIndex = null;
-            document.getElementById('cashoutModal').classList.remove('active');
-        }
-
-        function confirmCashout() {
-            if (currentCashoutBetIndex === null) return;
-            
-            const entry = bettingData[currentTab].entries[currentCashoutBetIndex];
-            const result = document.getElementById('cashoutResult').value;
-            const amount = parseFloat(document.getElementById('cashoutAmount').value);
-            
-            if (isNaN(amount) || amount < 0) {
-                alert('⚠️ Valor de cashout inválido!');
-                return;
-            }
-            
-            if (amount > entry.potentialReturn) {
-                alert(`⚠️ Valor de cashout não pode ser maior que o retorno potencial (R$ ${entry.potentialReturn.toFixed(2)})!`);
-                return;
-            }
-            
-            entry.result = result === 'win' ? 'cashout-win' : 'cashout-loss';
-            entry.cashoutAmount = amount;
-            entry.settledAt = new Date().toISOString();
-            
-            config.availableBalance += amount;
-            
-            if (result === 'win') {
-                const profit = amount - entry.stake;
-                config.bankroll += profit;
-                console.log(`[CASHOUT WIN] +R$ ${profit.toFixed(2)} | Recebido: R$ ${amount.toFixed(2)}`);
-            } else {
-                const loss = entry.stake - amount;
-                config.bankroll -= loss;
-                console.log(`[CASHOUT LOSS] -R$ ${loss.toFixed(2)} | Recuperado: R$ ${amount.toFixed(2)}`);
-            }
-            
-            // Aplicar estratégia automática após cashout
-            applyAutoStrategy();
-            
-            closeCashoutModal();
-            saveData();
-            updateUI();
-            
-            const message = result === 'win' ?
-                `💰 CASHOUT COM GANHO!\n\nValor recebido: R$ ${amount.toFixed(2)}\nLucro: +R$ ${(amount - entry.stake).toFixed(2)}` :
-                `💰 CASHOUT COM PERDA PARCIAL!\n\nValor recuperado: R$ ${amount.toFixed(2)}\nPerda: -R$ ${(entry.stake - amount).toFixed(2)}`;
-            
-            alert(message);
-        }
-
-        function deleteEntry(index) {
-            if (!confirm('🗑️ Tem certeza que deseja deletar esta aposta?')) return;
-            
-            const entry = bettingData[currentTab].entries[index];
-            
-            if (entry.result === 'pending') {
-                config.availableBalance += entry.stake;
-                console.log(`[DELETE PENDING] Devolvido: R$ ${entry.stake.toFixed(2)}`);
-            } else if (entry.result === 'win') {
-                config.availableBalance -= entry.potentialReturn;
-                config.bankroll -= (entry.potentialReturn - entry.stake);
-                console.log(`[DELETE WIN] Removido: R$ ${(entry.potentialReturn - entry.stake).toFixed(2)}`);
-            } else if (entry.result === 'loss') {
-                config.bankroll += entry.stake;
-                console.log(`[DELETE LOSS] Devolvido: R$ ${entry.stake.toFixed(2)}`);
-            } else if (entry.result === 'cashout-win') {
-                config.availableBalance -= entry.cashoutAmount;
-                config.bankroll -= (entry.cashoutAmount - entry.stake);
-            } else if (entry.result === 'cashout-loss') {
-                config.availableBalance -= entry.cashoutAmount;
-                config.bankroll += (entry.stake - entry.cashoutAmount);
-            }
-            
-            bettingData[currentTab].entries.splice(index, 1);
-            
-            // Recalcular estratégia após deletar
-            applyAutoStrategy();
-            
+            closeBetModal();
             saveData();
             updateUI();
         }
 
-        // ============================================
-        // FUNÇÕES DE RENDERIZAÇÃO
-        // ============================================
+        function updateBetStatus(betId, status) {
+            const bet = bettingData.bets.find(b => b.id === betId);
+            if (!bet) return;
 
-        function renderAISuggestions() {
-            const suggestions = generateAISuggestions();
-            const analysis = analyzePerformance();
-            const dayName = getDayOfWeek(getToday());
-            const dayLabel = MATCH_FREQUENCY.brasil[dayName].label;
-            
-            document.getElementById('suggestedStake').textContent = `R$ ${suggestions.stake.toFixed(2)}`;
-            document.getElementById('stakePercent').textContent = `${((suggestions.stake / config.bankroll) * 100).toFixed(1)}% da carteira`;
-            
-            document.getElementById('idealOdd').textContent = suggestions.idealOdd;
-            document.getElementById('oddRange').textContent = `Min: ${suggestions.minOdd} | Máx: ${suggestions.maxOdd}`;
-            
-            document.getElementById('maxBetsToday').textContent = suggestions.maxBetsToday + (suggestions.dayType === 'high' ? ' 🔥' : '');
-            document.getElementById('dayType').textContent = `${dayLabel} - ${suggestions.dayType === 'high' ? 'Alto volume' : 'Volume moderado'}`;
-            
-            const confidenceEmoji = suggestions.confidence === 'high' ? '🟢' :
-                                   suggestions.confidence === 'medium' ? '🟡' :
-                                   suggestions.confidence === 'low' ? '🟠' : '🔴';
-            document.getElementById('confidenceLevel').textContent = confidenceEmoji;
-            document.getElementById('strategyInfo').textContent = strategies[config.strategy].name;
-            
-            const alerts = generateAlerts(suggestions, analysis);
-            const alertsContainer = document.getElementById('aiAlerts');
-            alertsContainer.innerHTML = alerts.map(alert => `
-                <div class="alert alert-${alert.type}">${alert.message}</div>
-            `).join('');
-        }
+            bet.status = status;
 
-        function updateStats() {
-            const analysis = analyzePerformance();
-            const financials = calculateFinancials();
-            
-            document.getElementById('totalBankroll').textContent = `R$ ${config.bankroll.toFixed(2)}`;
-            const change = config.bankroll - config.initialBankroll;
-            const changePercent = ((change / config.initialBankroll) * 100).toFixed(2);
-            const changeClass = change >= 0 ? 'success' : 'danger';
-            document.getElementById('bankrollChange').innerHTML = `<span class="${changeClass}">${change >= 0 ? '▲' : '▼'} R$ ${Math.abs(change).toFixed(2)} (${change >= 0 ? '+' : ''}${changePercent}%)</span>`;
-            
-            document.getElementById('availableBalance').textContent = `R$ ${config.availableBalance.toFixed(2)}`;
-            document.getElementById('availablePercent').textContent = `${((config.availableBalance / config.bankroll) * 100).toFixed(1)}% da carteira`;
-            
-            document.getElementById('investedAmount').textContent = `R$ ${financials.invested.toFixed(2)}`;
-            document.getElementById('investedPercent').textContent = `${((financials.invested / config.bankroll) * 100).toFixed(1)}% investido`;
-            
-            document.getElementById('totalProfit').textContent = `R$ ${financials.totalProfit.toFixed(2)}`;
-            document.getElementById('profitCount').textContent = `${financials.profitCount} ${financials.profitCount === 1 ? 'vitória' : 'vitórias'}`;
-            
-            document.getElementById('totalLoss').textContent = `R$ ${financials.totalLoss.toFixed(2)}`;
-            document.getElementById('lossCount').textContent = `${financials.lossCount} ${financials.lossCount === 1 ? 'derrota' : 'derrotas'}`;
-            
-            if (analysis) {
-                document.getElementById('actualWinRate').textContent = `${analysis.actualWinRate.toFixed(1)}%`;
-                
-                if (analysis.totalBets >= 20) {
-                    document.getElementById('winRateHint').textContent = `✅ Real (${analysis.totalBets} apostas)`;
-                } else if (analysis.totalBets >= 10) {
-                    document.getElementById('winRateHint').textContent = `🔄 Transição (${analysis.totalBets}/20)`;
+            if (status === 'win') {
+                config.currentBankroll += bet.return;
+                bet.result = bet.return - bet.amount;
+                alert(`🎉 Aposta vencida! Lucro de R$ ${bet.result.toFixed(2)}`);
+            } else if (status === 'loss') {
+                bet.result = -bet.amount;
+                alert(`😞 Aposta perdida. Prejuízo de R$ ${bet.amount.toFixed(2)}`);
+            } else if (status === 'cashout') {
+                const cashoutValue = parseFloat(prompt('💰 Valor do cashout:', (bet.amount * 1.1).toFixed(2)));
+                if (cashoutValue && cashoutValue > 0) {
+                    config.currentBankroll += cashoutValue;
+                    bet.return = cashoutValue;
+                    bet.result = cashoutValue - bet.amount;
+                    alert(`💰 Cashout realizado! ${bet.result >= 0 ? 'Lucro' : 'Prejuízo'} de R$ ${Math.abs(bet.result).toFixed(2)}`);
                 } else {
-                    document.getElementById('winRateHint').textContent = `${analysis.totalBets}/20 apostas`;
+                    return;
                 }
-            } else {
-                document.getElementById('actualWinRate').textContent = '0%';
-                document.getElementById('winRateHint').textContent = 'Sem histórico';
             }
-            
-            updateDistributionBars(financials);
+
+            saveData();
+            updateUI();
         }
 
-        function updateDistributionBars(financials) {
-            const availPercent = Math.max(5, (config.availableBalance / config.bankroll) * 100);
-            const investPercent = Math.max(5, (financials.invested / config.bankroll) * 100);
-            const profitPercent = financials.totalProfit > 0 ? Math.max(5, (financials.totalProfit / config.initialBankroll) * 100) : 5;
-            const lossPercent = financials.totalLoss > 0 ? Math.max(5, (financials.totalLoss / config.initialBankroll) * 100) : 5;
+        function deleteBet(betId) {
+            if (!confirm('⚠️ Tem certeza que deseja excluir esta aposta?')) return;
 
-            document.getElementById('barAvailable').style.width = `${Math.min(100, availPercent)}%`;
-            document.getElementById('barAvailableLabel').textContent = `R$ ${config.availableBalance.toFixed(2)} (${availPercent.toFixed(0)}%)`;
+            const bet = bettingData.bets.find(b => b.id === betId);
+            if (bet && bet.status === 'pending') {
+                config.currentBankroll += bet.amount;
+            }
 
-            document.getElementById('barInvested').style.width = `${Math.min(100, investPercent)}%`;
-            document.getElementById('barInvestedLabel').textContent = `R$ ${financials.invested.toFixed(2)} (${investPercent.toFixed(0)}%)`;
-
-            document.getElementById('barProfit').style.width = `${Math.min(100, profitPercent)}%`;
-            document.getElementById('barProfitLabel').textContent = `R$ ${financials.totalProfit.toFixed(2)}`;
-
-            document.getElementById('barLoss').style.width = `${Math.min(100, lossPercent)}%`;
-            document.getElementById('barLossLabel').textContent = `R$ ${financials.totalLoss.toFixed(2)}`;
+            bettingData.bets = bettingData.bets.filter(b => b.id !== betId);
+            
+            saveData();
+            updateUI();
+            alert('✅ Aposta excluída!');
         }
 
-        function renderTabs() {
-            const dates = Object.keys(bettingData).sort().reverse();
-            const today = getToday();
+        // ============================================
+        // FUNÇÕES DE EDIÇÃO DE ODD
+        // ============================================
+
+        function openEditOddModal(betId) {
+            editingOddBetId = betId;
+            const bet = bettingData.bets.find(b => b.id === betId);
             
-            if (!dates.includes(today)) {
-                dates.unshift(today);
-                bettingData[today] = { entries: [] };
-            }
-            
-            const tabButtons = document.getElementById('tabButtons');
-            tabButtons.innerHTML = dates.map((date, index) => {
-                const isHighVolume = isHighVolumeDay(date);
-                const activeClass = index === 0 ? 'active' : '';
-                const highVolumeClass = isHighVolume ? 'high-volume' : '';
-                const label = date === today ? '📅 Hoje' : formatDate(date);
-                
-                return `
-                    <div class="tab ${activeClass} ${highVolumeClass}" onclick="switchTab('${date}')">
-                        ${label}
-                    </div>
-                `;
-            }).join('');
-            
-            if (dates.length > 0) {
-                renderTabContent(dates[0]);
-            }
+            if (!bet) return;
+
+            document.getElementById('editOddValue').value = bet.odd;
+            document.getElementById('editOddReason').value = '';
+            document.getElementById('editOddModal').classList.add('active');
         }
 
-        function switchTab(date) {
-            currentTab = date;
-            document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            renderTabContent(date);
+        function closeEditOddModal() {
+            document.getElementById('editOddModal').classList.remove('active');
+            editingOddBetId = null;
         }
 
-        function renderTabContent(date) {
-            currentTab = date;
-            if (!bettingData[date]) {
-                bettingData[date] = { entries: [] };
+        function saveOddEdit() {
+            const newOdd = parseFloat(document.getElementById('editOddValue').value);
+            const reason = document.getElementById('editOddReason').value.trim();
+
+            if (!newOdd || newOdd < 1.0) {
+                alert('❌ Odd inválida! Deve ser maior que 1.0');
+                return;
             }
-            
-            const day = bettingData[date];
-            const suggestions = generateAISuggestions();
-            const betsToday = day.entries.length;
-            const canBet = betsToday < suggestions.maxBetsToday && config.availableBalance > 0;
-            
-            const content = document.getElementById('tabContent');
-            
-            let suggestionBox = '';
-            if (canBet) {
-                suggestionBox = `
-                    <div class="suggestion-box">
-                        <div class="suggestion-title">⭐ APOSTA SUGERIDA - Baseada em dados estatísticos</div>
-                        <div class="suggestion-grid">
-                            <div class="suggestion-item">
-                                <div class="suggestion-label">Valor</div>
-                                <div class="suggestion-value">R$ ${suggestions.stake.toFixed(2)}</div>
-                            </div>
-                            <div class="suggestion-item">
-                                <div class="suggestion-label">Odd Ideal</div>
-                                <div class="suggestion-value">${suggestions.idealOdd}</div>
-                            </div>
-                            <div class="suggestion-item">
-                                <div class="suggestion-label">Faixa</div>
-                                <div class="suggestion-value">${suggestions.minOdd}-${suggestions.maxOdd}</div>
-                            </div>
-                            <div class="suggestion-item">
-                                <div class="suggestion-label">Retorno Esperado</div>
-                                <div class="suggestion-value">R$ ${(suggestions.stake * parseFloat(suggestions.idealOdd)).toFixed(2)}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+
+            if (!reason) {
+                alert('❌ Por favor, informe o motivo da alteração!');
+                return;
             }
-            
-            let formSection = '';
-            if (canBet) {
-                formSection = `
-                    <div style="background: rgba(0, 227, 150, 0.05); border: 1px solid rgba(0, 227, 150, 0.2); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                        <h3 style="margin-bottom: 15px; color: #00E396;">➕ Nova Aposta - ${formatDate(date)}</h3>
-                        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
-                            Apostas hoje: ${betsToday}/${suggestions.maxBetsToday} | Saldo: R$ ${config.availableBalance.toFixed(2)}
-                        </p>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Descrição</label>
-                                <input type="text" id="entryDesc" placeholder="Ex: Flamengo vs Palmeiras - Flamengo vence">
-                            </div>
-                            <div class="form-group">
-                                <label>Odd</label>
-                                <input type="number" id="entryOdd" step="0.01" placeholder="${suggestions.idealOdd}">
-                            </div>
-                            <div class="form-group">
-                                <label>Valor (R$)</label>
-                                <input type="number" id="entryStake" step="0.01" value="${suggestions.stake.toFixed(2)}" max="${config.availableBalance}">
-                            </div>
-                        </div>
-                        <button class="btn" onclick="addEntry()">Adicionar Aposta</button>
-                    </div>
-                `;
-            } else {
-                const reason = config.availableBalance <= 0 ? 
-                    'Saldo insuficiente. Aguarde os resultados das apostas pendentes.' :
-                    `Limite diário atingido (${suggestions.maxBetsToday} apostas). Aguarde até amanhã.`;
-                
-                formSection = `
-                    <div style="background: rgba(255, 69, 96, 0.05); border: 1px solid rgba(255, 69, 96, 0.2); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                        <h3 style="margin-bottom: 10px; color: #FF4560;">🚫 Limite Atingido</h3>
-                        <p style="font-size: 14px; color: #999;">${reason}</p>
-                    </div>
-                `;
-            }
-            
-            let tableSection = '';
-            if (day.entries.length === 0) {
-                tableSection = `
-                    <div class="empty-state">
-                        <div style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;">📋</div>
-                        <p>Nenhuma aposta registrada neste dia.</p>
-                    </div>
-                `;
-            } else {
-                tableSection = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Descrição</th>
-                                <th>Odd</th>
-                                <th>Valor</th>
-                                <th>Retorno</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${day.entries.map((entry, index) => {
-                                let statusClass = 'pending';
-                                let statusText = '⏳ Pendente';
-                                
-                                if (entry.result === 'win') {
-                                    statusClass = 'win';
-                                    statusText = '✅ Ganhou';
-                                } else if (entry.result === 'loss') {
-                                    statusClass = 'loss';
-                                    statusText = '❌ Perdeu';
-                                } else if (entry.result === 'cashout-win') {
-                                    statusClass = 'cashout';
-                                    statusText = `💰 Cashout ✅ (R$ ${entry.cashoutAmount.toFixed(2)})`;
-                                } else if (entry.result === 'cashout-loss') {
-                                    statusClass = 'cashout';
-                                    statusText = `💰 Cashout ❌ (R$ ${entry.cashoutAmount.toFixed(2)})`;
-                                }
-                                
-                                return `
-                                    <tr>
-                                        <td><strong>${entry.description}</strong></td>
-                                        <td>${entry.odd.toFixed(2)}</td>
-                                        <td>R$ ${entry.stake.toFixed(2)}</td>
-                                        <td>R$ ${entry.potentialReturn.toFixed(2)}</td>
-                                        <td><span class="badge badge-${statusClass}">${statusText}</span></td>
-                                        <td>
-                                            <div style="display: flex; gap: 8px;">
-                                                ${entry.result === 'pending' ? `
-                                                    <button class="btn btn-success" onclick="markResult(${index}, 'win')">✅</button>
-                                                    <button class="btn btn-danger" onclick="markResult(${index}, 'loss')">❌</button>
-                                                    <button class="btn btn-warning" onclick="openCashoutModal(${index})">💰</button>
-                                                ` : ''}
-                                                <button class="btn btn-secondary" onclick="deleteEntry(${index})">🗑️</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                `;
-            }
-            
-            content.innerHTML = suggestionBox + formSection + tableSection;
+
+            const bet = bettingData.bets.find(b => b.id === editingOddBetId);
+            if (!bet) return;
+
+            // Registrar histórico
+            if (!bet.oddHistory) bet.oddHistory = [];
+            bet.oddHistory.push({
+                date: new Date().toISOString(),
+                oldOdd: bet.odd,
+                newOdd: newOdd,
+                reason: reason
+            });
+
+            // Atualizar odd e retorno
+            bet.odd = newOdd;
+            bet.return = (newOdd * bet.amount).toFixed(2);
+
+            closeEditOddModal();
+            saveData();
+            updateUI();
+            alert(`✅ Odd atualizada de ${bet.oddHistory[bet.oddHistory.length - 1].oldOdd} para ${newOdd}!`);
         }
+
+        // ============================================
+        // FUNÇÕES DE AJUSTE DE RETORNO
+        // ============================================
+
+        function openAdjustReturnModal(betId) {
+            adjustingReturnBetId = betId;
+            const bet = bettingData.bets.find(b => b.id === betId);
+            
+            if (!bet) return;
+
+            document.getElementById('originalReturn').value = `R$ ${bet.return}`;
+            document.getElementById('adjustedReturn').value = bet.return;
+            document.getElementById('adjustReturnReason').value = '';
+            document.getElementById('adjustReturnModal').classList.add('active');
+        }
+
+        function closeAdjustReturnModal() {
+            document.getElementById('adjustReturnModal').classList.remove('active');
+            adjustingReturnBetId = null;
+        }
+
+        function saveReturnAdjustment() {
+            const newReturn = parseFloat(document.getElementById('adjustedReturn').value);
+            const reason = document.getElementById('adjustReturnReason').value.trim();
+
+            if (!newReturn || newReturn < 0) {
+                alert('❌ Retorno inválido!');
+                return;
+            }
+
+            if (!reason) {
+                alert('❌ Por favor, informe o motivo do ajuste!');
+                return;
+            }
+
+            const bet = bettingData.bets.find(b => b.id === adjustingReturnBetId);
+            if (!bet) return;
+
+            // Registrar histórico de ajustes
+            if (!bet.returnHistory) bet.returnHistory = [];
+            bet.returnHistory.push({
+                date: new Date().toISOString(),
+                oldReturn: bet.return,
+                newReturn: newReturn,
+                reason: reason
+            });
+
+            bet.return = newReturn;
+
+            closeAdjustReturnModal();
+            saveData();
+            updateUI();
+            alert(`✅ Retorno ajustado de R$ ${bet.returnHistory[bet.returnHistory.length - 1].oldReturn} para R$ ${newReturn}!`);
+        }
+
+        // ============================================
+        // ATUALIZAÇÃO DA UI
+        // ============================================
 
         function updateUI() {
-            applyAutoStrategy();
-            updateStrategyDisplay();
-            renderAISuggestions();
-            updateStats();
-            renderTabs();
+            updateDashboard();
+            updateBetsTable();
+            updateTransactionsTable();
         }
 
-        // ============================================
-        // FUNÇÕES DE CONFIGURAÇÃO E MODALS
-        // ============================================
+        function updateDashboard() {
+            // Saldo atual
+            document.getElementById('currentBankroll').textContent = `R$ ${config.currentBankroll.toFixed(2)}`;
 
-        function openConfigModal() {
-            document.getElementById('bankrollInput').value = config.bankroll.toFixed(2);
-            document.getElementById('winRateInput').value = config.estimatedWinRate;
-            document.getElementById('autoStrategyToggle').checked = config.autoStrategy;
-            document.getElementById('strategySelect').value = config.strategy;
+            // Calcular lucro real
+            const invested = config.totalDeposits - config.totalWithdrawals;
+            const realProfit = config.currentBankroll - invested;
+            const profitPercent = invested > 0 ? (realProfit / invested) * 100 : 0;
+
+            document.getElementById('profitDisplay').textContent = `R$ ${realProfit.toFixed(2)}`;
+            document.getElementById('profitDisplay').className = `card-value ${realProfit >= 0 ? 'success' : 'danger'}`;
             
-            document.getElementById('manualStrategyGroup').style.display = 
-                config.autoStrategy ? 'none' : 'block';
+            document.getElementById('profitPercent').textContent = `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}% do investido`;
+            document.getElementById('profitPercent').className = `card-subtitle ${profitPercent >= 0 ? 'success' : 'danger'}`;
+
+            // Total depositado
+            document.getElementById('totalDeposited').textContent = `R$ ${config.totalDeposits.toFixed(2)}`;
+
+            // Apostas ativas
+            const activeBets = bettingData.bets.filter(b => b.status === 'pending');
+            const activeBetsValue = activeBets.reduce((sum, bet) => sum + bet.amount, 0);
             
-            const analysis = analyzePerformance();
-            const hint = document.getElementById('winRateHintConfig');
-            if (analysis && analysis.totalBets >= 20) {
-                hint.textContent = `Sistema usando ${analysis.actualWinRate.toFixed(1)}% (real) automaticamente`;
-            } else if (analysis && analysis.totalBets >= 10) {
-                hint.textContent = `${analysis.totalBets}/20 apostas para win rate real`;
+            document.getElementById('activeBets').textContent = activeBets.length;
+            document.getElementById('activeBetsValue').textContent = `R$ ${activeBetsValue.toFixed(2)} investido`;
+
+            // Status da carteira
+            const availableBalance = config.currentBankroll;
+            if (availableBalance <= 0) {
+                document.getElementById('bankrollChange').innerHTML = '<span class="danger">⚠️ Saldo zerado</span>';
             } else {
-                hint.textContent = 'Estime conservadoramente (50-55%)';
+                document.getElementById('bankrollChange').innerHTML = `<span class="success">Disponível: R$ ${availableBalance.toFixed(2)}</span>`;
             }
-            
-            document.getElementById('configModal').classList.add('active');
         }
 
-        function closeConfigModal() {
-            document.getElementById('configModal').classList.remove('active');
-        }
-
-        function updateConfig() {
-            const newBankroll = parseFloat(document.getElementById('bankrollInput').value);
-            const newWinRate = parseInt(document.getElementById('winRateInput').value);
-            const newStrategy = document.getElementById('strategySelect').value;
+        function updateBetsTable() {
+            const tbody = document.getElementById('betsBody');
             
-            if (isNaN(newBankroll) || newBankroll <= 0) {
-                alert('⚠️ Carteira deve ser maior que zero!');
+            if (bettingData.bets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #666;">Nenhuma aposta registrada ainda</td></tr>';
                 return;
             }
+
+            tbody.innerHTML = bettingData.bets.map(bet => {
+                const statusBadge = {
+                    'pending': '<span class="badge badge-pending">⏳ Pendente</span>',
+                    'win': '<span class="badge badge-win">✅ Vitória</span>',
+                    'loss': '<span class="badge badge-loss">❌ Derrota</span>',
+                    'cashout': '<span class="badge badge-cashout">💰 Cashout</span>'
+                }[bet.status];
+
+                const actions = bet.status === 'pending' ? `
+                    <div class="action-buttons">
+                        <button class="btn-success" onclick="updateBetStatus(${bet.id}, 'win')" title="Marcar como vitória">✓</button>
+                        <button class="btn-danger" onclick="updateBetStatus(${bet.id}, 'loss')" title="Marcar como derrota">✗</button>
+                        <button class="btn-warning" onclick="updateBetStatus(${bet.id}, 'cashout')" title="Fazer cashout">$</button>
+                        <button class="btn-info" onclick="openEditOddModal(${bet.id})" title="Editar odd">✏️</button>
+                        <button class="btn-info" onclick="openAdjustReturnModal(${bet.id})" title="Ajustar retorno">💰</button>
+                        <button class="btn-danger" onclick="deleteBet(${bet.id})" title="Excluir">🗑️</button>
+                    </div>
+                ` : '-';
+
+                const oddDisplay = bet.oddHistory && bet.oddHistory.length > 0 
+                    ? `${bet.odd.toFixed(2)} <span style="color: #666; font-size: 11px;" title="Odd alterada">(editada)</span>`
+                    : bet.odd.toFixed(2);
+
+                const returnDisplay = bet.returnHistory && bet.returnHistory.length > 0
+                    ? `R$ ${parseFloat(bet.return).toFixed(2)} <span style="color: #666; font-size: 11px;" title="Retorno ajustado">(ajustado)</span>`
+                    : `R$ ${parseFloat(bet.return).toFixed(2)}`;
+
+                return `
+                    <tr>
+                        <td>${formatDate(bet.date)}</td>
+                        <td>${bet.event}</td>
+                        <td>${oddDisplay}</td>
+                        <td>R$ ${bet.amount.toFixed(2)}</td>
+                        <td>${returnDisplay}</td>
+                        <td>${statusBadge}</td>
+                        <td>${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateTransactionsTable() {
+            const tbody = document.getElementById('transactionsBody');
             
-            if (isNaN(newWinRate) || newWinRate < 30 || newWinRate > 80) {
-                alert('⚠️ Win rate deve estar entre 30% e 80%!');
+            if (bettingData.transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #666;">Nenhuma transação registrada</td></tr>';
                 return;
             }
-            
-            const oldBankroll = config.bankroll;
-            const diff = newBankroll - oldBankroll;
-            config.availableBalance += diff;
-            
-            config.bankroll = newBankroll;
-            config.estimatedWinRate = newWinRate;
-            
-            if (!config.autoStrategy) {
-                config.strategy = newStrategy;
-            }
-            
-            if (!config.initialBankroll) {
-                config.initialBankroll = newBankroll;
-            }
-            
-            closeConfigModal();
-            saveData();
-            updateUI();
-            alert('✅ Configurações salvas com sucesso!');
-        }
 
-        function openImportModal() {
-            document.getElementById('importModal').classList.add('active');
-        }
+            tbody.innerHTML = bettingData.transactions.map(tx => {
+                const typeBadge = {
+                    'deposit': '<span class="badge badge-deposit">💵 Depósito</span>',
+                    'withdrawal': '<span class="badge badge-loss">💸 Saque</span>',
+                    'adjustment': '<span class="badge badge-adjustment">⚖️ Reajuste</span>'
+                }[tx.type] || '<span class="badge">Outro</span>';
 
-        function closeImportModal() {
-            document.getElementById('importModal').classList.remove('active');
-        }
+                const amountClass = tx.type === 'withdrawal' ? 'danger' : 'success';
 
-        function importData() {
-            try {
-                const jsonStr = document.getElementById('importData').value.trim();
-                
-                if (!jsonStr) {
-                    alert('⚠️ Cole o JSON do backup no campo de texto!');
-                    return;
-                }
-                
-                const data = JSON.parse(jsonStr);
-                
-                if (!data.config || !data.bettingData) {
-                    alert('❌ Formato de backup inválido! Certifique-se de que o JSON contém "config" e "bettingData".');
-                    return;
-                }
-                
-                if (!confirm('⚠️ ATENÇÃO: Isso vai SUBSTITUIR todos os dados atuais.\n\nTem certeza que deseja continuar?')) {
-                    return;
-                }
-                
-                config = data.config;
-                
-                // Garantir que autoStrategy existe
-                if (config.autoStrategy === undefined) {
-                    config.autoStrategy = true;
-                }
-                
-                bettingData = data.bettingData;
-                
-                saveData();
-                updateUI();
-                closeImportModal();
-                
-                document.getElementById('importData').value = '';
-                
-                alert('✅ Dados importados com sucesso!');
-                
-            } catch (e) {
-                console.error('Erro ao importar:', e);
-                alert('❌ Erro ao importar dados!\n\nVerifique se o JSON está correto e no formato válido.\n\nErro: ' + e.message);
-            }
+                return `
+                    <tr>
+                        <td>${formatDate(tx.date.split('T')[0])}</td>
+                        <td>${typeBadge}</td>
+                        <td class="${amountClass}">R$ ${tx.amount.toFixed(2)}</td>
+                        <td>${tx.description}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // ============================================
         // FUNÇÕES DE PERSISTÊNCIA
         // ============================================
 
-        function testLocalStorage() {
-            try {
-                const test = '__test__';
-                localStorage.setItem(test, test);
-                localStorage.removeItem(test);
-                return true;
-            } catch(e) {
-                return false;
-            }
-        }
-
-        const hasLocalStorage = testLocalStorage();
-
         function saveData() {
             try {
                 config.lastSave = new Date().toISOString();
-                
-                if (hasLocalStorage) {
-                    localStorage.setItem('bettingConfig', JSON.stringify(config));
-                    localStorage.setItem('bettingData', JSON.stringify(bettingData));
-                    updateSaveStatus(true);
-                } else {
-                    document.cookie = `bettingConfig=${encodeURIComponent(JSON.stringify(config))}; max-age=31536000; path=/`;
-                    document.cookie = `bettingData=${encodeURIComponent(JSON.stringify(bettingData))}; max-age=31536000; path=/`;
-                    updateSaveStatus(true);
-                }
-                
-                console.log('[SAVE] Dados salvos:', new Date().toLocaleTimeString());
+                localStorage.setItem('criteryon_config_v6', JSON.stringify(config));
+                localStorage.setItem('criteryon_data_v6', JSON.stringify(bettingData));
+                updateSaveStatus(true);
                 return true;
             } catch (e) {
                 console.error('[SAVE ERROR]', e);
@@ -1656,42 +912,15 @@
 
         function loadData() {
             try {
-                let loadedConfig = null;
-                let loadedData = null;
-
-                if (hasLocalStorage) {
-                    const savedConfig = localStorage.getItem('bettingConfig');
-                    const savedData = localStorage.getItem('bettingData');
-                    
-                    if (savedConfig) loadedConfig = JSON.parse(savedConfig);
-                    if (savedData) loadedData = JSON.parse(savedData);
-                } else {
-                    const cookies = document.cookie.split(';');
-                    for (let cookie of cookies) {
-                        const [name, value] = cookie.trim().split('=');
-                        if (name === 'bettingConfig') {
-                            loadedConfig = JSON.parse(decodeURIComponent(value));
-                        }
-                        if (name === 'bettingData') {
-                            loadedData = JSON.parse(decodeURIComponent(value));
-                        }
-                    }
+                const savedConfig = localStorage.getItem('criteryon_config_v6');
+                const savedData = localStorage.getItem('criteryon_data_v6');
+                
+                if (savedConfig) {
+                    config = JSON.parse(savedConfig);
                 }
                 
-                if (loadedConfig) {
-                    config = loadedConfig;
-                    
-                    // Garantir que autoStrategy existe
-                    if (config.autoStrategy === undefined) {
-                        config.autoStrategy = true;
-                    }
-                    
-                    console.log('[LOAD] Config carregada');
-                }
-                
-                if (loadedData) {
-                    bettingData = loadedData;
-                    console.log('[LOAD] Dados carregados');
+                if (savedData) {
+                    bettingData = JSON.parse(savedData);
                 }
                 
                 updateUI();
@@ -1706,23 +935,11 @@
             const status = document.getElementById('saveStatus');
             if (success) {
                 status.className = 'save-status';
-                if (config.lastSave) {
-                    const time = new Date(config.lastSave).toLocaleTimeString('pt-BR');
-                    status.textContent = `✅ Salvo ${time}`;
-                } else {
-                    status.textContent = '✅ Dados Salvos';
-                }
+                const time = new Date(config.lastSave).toLocaleTimeString('pt-BR');
+                status.textContent = `✅ Salvo ${time}`;
             } else {
                 status.className = 'save-status error';
                 status.textContent = '❌ Erro ao Salvar';
-            }
-        }
-
-        function manualSave() {
-            if (saveData()) {
-                alert('✅ Dados salvos com sucesso!');
-            } else {
-                alert('❌ Erro ao salvar!');
             }
         }
 
@@ -1731,7 +948,7 @@
                 config: config,
                 bettingData: bettingData,
                 exportDate: new Date().toISOString(),
-                version: '5.0-criteryon-auto-strategy'
+                version: 'criteryon-v6.0-fixed'
             };
             
             const dataStr = JSON.stringify(data, null, 2);
@@ -1739,20 +956,16 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `criteryon-backup-${getToday()}.json`;
+            a.download = `criteryon-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
             
-            alert('✅ Backup exportado com sucesso!\n\nGuarde este arquivo em local seguro.');
+            alert('✅ Backup exportado com sucesso!');
         }
 
         // ============================================
         // UTILITÁRIOS
         // ============================================
-
-        function getToday() {
-            return new Date().toISOString().split('T')[0];
-        }
 
         function formatDate(dateStr) {
             const [year, month, day] = dateStr.split('-');
@@ -1768,7 +981,7 @@
         }, 30000);
 
         window.onload = function() {
-            console.log('[INIT] Criteryon v5.0 - Estratégia Automática');
+            console.log('[INIT] Criteryon v6.0 - FIXED VERSION');
             loadData();
             
             window.addEventListener('beforeunload', () => {
